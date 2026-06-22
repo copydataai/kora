@@ -196,6 +196,7 @@ private struct RoomDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             header
             statusPanel
+            qualityBanner
             participantsPanel
             invitePanel
             assetPanel
@@ -247,6 +248,43 @@ private struct RoomDetailView: View {
             Text("Next action hint: \(room.nextActionHint)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var qualityBanner: some View {
+        let hardStopCount = room.qualityIssues.filter { $0.severity == .hardStop }.count
+        let warningCount = room.qualityIssues.filter { $0.severity == .warning }.count
+
+        if hardStopCount > 0 {
+            HStack {
+                Text("Quality blockers: \(hardStopCount)")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.red)
+                    .clipShape(Capsule())
+                if warningCount > 0 {
+                    Text("Warnings: \(warningCount)")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.orange)
+                        .clipShape(Capsule())
+                }
+            }
+        } else if warningCount > 0 {
+            HStack {
+                Text("Quality warnings: \(warningCount)")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.orange)
+                    .clipShape(Capsule())
+            }
         }
     }
 
