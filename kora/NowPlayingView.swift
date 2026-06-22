@@ -17,6 +17,12 @@ struct NowPlayingView: View {
             seekBar
             transport
             volume
+            if let errorMessage = player.errorMessage {
+                Text(errorMessage)
+                    .font(.callout)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.red)
+            }
         }
         .padding(40)
         .frame(maxWidth: 560, maxHeight: .infinity)
@@ -52,11 +58,14 @@ struct NowPlayingView: View {
     private var transport: some View {
         HStack(spacing: 20) {
             Button { player.previous() } label: { Image(systemName: "backward.fill") }
+                .accessibilityLabel("Previous")
             Button { player.playPause() } label: {
                 Image(systemName: player.isPlaying ? "pause.fill" : "play.fill").font(.title)
             }
             .keyboardShortcut(.space, modifiers: [])
+            .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
             Button { player.next() } label: { Image(systemName: "forward.fill") }
+                .accessibilityLabel("Next")
         }
         .buttonStyle(.plain)
         .disabled(!player.hasTrack)
@@ -65,8 +74,11 @@ struct NowPlayingView: View {
     private var volume: some View {
         HStack(spacing: 10) {
             Image(systemName: "speaker.fill").foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Slider(value: $player.volume, in: 0...1)
+                .accessibilityLabel("Volume")
             Image(systemName: "speaker.wave.3.fill").foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
         .frame(maxWidth: 260)
     }
