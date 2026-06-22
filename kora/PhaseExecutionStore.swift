@@ -5,7 +5,7 @@ final class PhaseExecutionStore: ObservableObject {
     @Published private(set) var completedMilestones: Set<String> = []
 
     private let storageKey = "kora.phase.completedMilestones"
-    private let fileManager = FileManager.default
+    private let stateFileName = "milestone-state.json"
 
     init() {
         load()
@@ -60,21 +60,13 @@ final class PhaseExecutionStore: ObservableObject {
         saveToFile(values)
     }
 
-    private func fileURL() -> URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-        let base = appSupport?.appendingPathComponent("Kora") ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        try? fileManager.createDirectory(at: base, withIntermediateDirectories: true)
-        return base.appendingPathComponent("milestone-state.json")
-    }
-
     private func saveToFile(_ values: [String]) {
-        let data = try? JSONEncoder().encode(values)
-        guard let data else { return }
-        try? data.write(to: fileURL(), options: .atomic)
+        guard let data = try? JSONEncoder().encode(values) else { return }
+        KoraAppStateMigration.saveStateData(data, fileName: stateFileName)
     }
 
     private func loadFromFileFallback() -> Set<String>? {
-        guard let data = try? Data(contentsOf: fileURL()) else { return nil }
+        guard let data = KoraAppStateMigration.loadStateData(fileName: stateFileName) else { return nil }
         let decoded = try? JSONDecoder().decode([String].self, from: data)
         return decoded.map(Set.init)
     }

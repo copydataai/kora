@@ -8,8 +8,9 @@ final class RoomStore: ObservableObject {
     @Published var activeRoomID: UUID?
     @Published var lastError: String?
 
-    private let fileManager = FileManager.default
     private let storageKey = "kora.rooms.state"
+    private let roomStateFileName = "room-state.json"
+    private let widgetStateFileName = "widget-state.json"
 
     private struct RoomStoreState: Codable {
         let rooms: [KoraRoom]
@@ -660,28 +661,14 @@ final class RoomStore: ObservableObject {
         }
     }
 
-    private func fileURL() -> URL {
-        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        let folder = base.appendingPathComponent("Kora")
-        try? fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
-        return folder.appendingPathComponent("room-state.json")
-    }
-
     private func saveToFile(_ data: Data) {
-        try? data.write(to: fileURL(), options: .atomic)
-    }
-
-    private func widgetFileURL() -> URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-        let base = appSupport?.appendingPathComponent("Kora") ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        return base.appendingPathComponent("widget-state.json")
+        KoraAppStateMigration.saveStateData(data, fileName: roomStateFileName)
     }
 
     private func saveWidgetPayload(_ payload: KoraWidgetPayload) {
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(payload) {
-            try? data.write(to: widgetFileURL(), options: .atomic)
+            KoraAppStateMigration.saveStateData(data, fileName: widgetStateFileName)
         }
     }
 
@@ -710,7 +697,7 @@ final class RoomStore: ObservableObject {
     }
 
     private func loadFromFileFallback() -> RoomStoreState? {
-        guard let data = try? Data(contentsOf: fileURL()) else { return nil }
+        guard let data = KoraAppStateMigration.loadStateData(fileName: roomStateFileName) else { return nil }
         return try? JSONDecoder().decode(RoomStoreState.self, from: data)
     }
 }
