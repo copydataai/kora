@@ -11,6 +11,83 @@ final class MusicLibrary: ObservableObject {
     }
 
     @Published private(set) var folders: [Folder] = []
+
+    private let defaults: UserDefaults
+    private let bookmarksKey = "library.folderBookmarks"
+    private var accessedURLs: [URL] = []
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    deinit {
+        for url in accessedURLs { url.stopAccessingSecurityScopedResource() }
+    }
+
+    // MARK: Pure persistence envelope (tested)
+
+    nonisolated static func encodeBookmarks(_ data: [Data]) -> Data {
+        (try? NSKeyedArchiver.archivedData(withRootObject: data as NSArray, requiringSecureCoding: true)) ?? Data()
+    }
+
+    nonisolated static func decodeBookmarks(_ data: Data) -> [Data] {
+        let classes = [NSArray.self, NSData.self]
+        let array = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: classes, from: data) as? [Data]
+        return array ?? []
+    }
+
+    // MARK: Public API
+
+    func addFolder(url: URL) {
+        guard let bookmark = try? url.bookmarkData(
+            options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil
+        ) else { return }
+        var saved = currentBookmarks()
+        saved.append(bookmark)
+        persist(saved)
+        ingest(url: url)
+    }
+
+    func forget(_ folder: Folder) {
+        folder.url.stopAccessingSecurityScopedResource()
+        accessedURLs.removeAll { $0 == folder.url }
+        folders.removeAll { $0.id == folder.id }
+        // Re-derive surviving bookmarks from remaining folders.
+        let surviving = folders.compactMap { f in
+            try? f.url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+        }
+        persist(surviving)
+    }
+
+    func restore() {
+        for bookmark in currentBookmarks() {
+            var stale = false
+            guard let url = try? URL(
+                resolvingBookmarkData: bookmark, options: .withSecurityScope,
+                relativeTo: nil, bookmarkDataIsStale: &stale
+            ), !stale else { continue }   // drop stale silently
+            ingest(url: url)
+        }
+    }
+
+    // MARK: Internal
+
+    private func ingest(url: URL) {
+        let accessed = url.startAccessingSecurityScopedResource()
+        if accessed { accessedURLs.append(url) }
+        let folderID = UUID()
+        let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folderID) }
+        folders.append(Folder(id: folderID, url: url, tracks: tracks))
+    }
+
+    private func currentBookmarks() -> [Data] {
+        guard let data = defaults.data(forKey: bookmarksKey) else { return [] }
+        return MusicLibrary.decodeBookmarks(data)
+    }
+
+    private func persist(_ bookmarks: [Data]) {
+        defaults.set(MusicLibrary.encodeBookmarks(bookmarks), forKey: bookmarksKey)
+    }
 }
 
 extension MusicLibrary {
