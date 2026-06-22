@@ -189,6 +189,8 @@ private struct RoomDetailView: View {
     @State private var nextActionDraft: String = ""
     @State private var showCopiedHint = false
     @State private var importError: String?
+    @State private var qualityMessage: String?
+    @State private var exportMessage: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -197,6 +199,7 @@ private struct RoomDetailView: View {
             participantsPanel
             invitePanel
             assetPanel
+            qualityPanel
             hintPanel
             Spacer()
         }
@@ -401,6 +404,84 @@ private struct RoomDetailView: View {
         }
     }
 
+    private var qualityPanel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Pre-export quality")
+                .font(.headline)
+
+            HStack(spacing: 12) {
+                Button("Run quality checks") {
+                    runQualityChecks()
+                }
+                .buttonStyle(.borderedProminent)
+
+                if let qualityLastCheckedAt = room.qualityLastCheckedAt {
+                    Text("Checked \(qualityLastCheckedAt.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Not checked")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if let qualityMessage {
+                Text(qualityMessage)
+                    .font(.caption)
+                    .foregroundStyle(room.qualityCanExport ? .green : .orange)
+            }
+
+            if room.qualityIssues.isEmpty && room.qualityLastCheckedAt != nil {
+                Text("No quality issues detected.")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+            } else if room.qualityIssues.isEmpty {
+                Text("Run checks before attempting export.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(room.qualityIssues) { issue in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text(issue.severity.title)
+                                .foregroundStyle(issue.severity == .hardStop ? .red : .orange)
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(issue.severity == .hardStop ? Color.red : Color.orange, lineWidth: 1)
+                                )
+                            Text("\(issue.title) — \(issue.message)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+
+            if room.qualityCanExport {
+                Button("Export project") {
+                    exportCurrentRoom()
+                }
+                .buttonStyle(.bordered)
+            } else {
+                Button("Export project") {
+                    exportCurrentRoom()
+                }
+                .buttonStyle(.bordered)
+                .disabled(true)
+            }
+
+            if let exportMessage {
+                Text(exportMessage)
+                    .font(.caption)
+                    .foregroundStyle(room.qualityCanExport ? .green : .red)
+            }
+        }
+    }
+
     private var hintPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Self-service hint")
@@ -436,10 +517,32 @@ private struct RoomDetailView: View {
         let success = store.importAudio(fileURL: url, into: room.id)
         importError = success ? nil : (store.lastError ?? "Unable to import audio.")
         if !success { return }
+        qualityMessage = "Asset imported. Run quality checks to unlock export."
         showCopiedHint = false
         #else
         importError = "Audio import is available on macOS only."
         #endif
+    }
+
+    private func runQualityChecks() {
+        let canExport = store.runQualityChecks(for: room.id)
+        qualityMessage = canExport
+            ? "Quality checks complete. Export is available."
+            : "Quality hard-stop detected. Export remains blocked."
+        if !canExport, let error = store.lastError {
+            qualityMessage = error
+        }
+        exportMessage = nil
+    }
+
+    private func exportCurrentRoom() {
+        let success = store.attemptExport(roomID: room.id)
+        exportMessage = success
+            ? "Export completed. Session marked as exported."
+            : (store.lastError ?? "Export blocked.")
+        if !success {
+            qualityMessage = nil
+        }
     }
 
     private func humanReadableSize(_ bytes: Int64) -> String {
