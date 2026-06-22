@@ -94,7 +94,8 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 ## Current ship status against v0.9/v1.0
 
 - `mvp-room` is implemented in-app: role-aware room state, room creation, and invite join flow.
-- `mvp-audio` and quality pipeline remain next in the same phase.
+- `mvp-audio` is implemented: local import + metadata extraction are now in room flow.
+- `mvp-quality` is next to close v0.9 loop.
 - v1.0 planning remains recommended baseline and includes:
   - richer self-service templates/presets,
   - signed update path,

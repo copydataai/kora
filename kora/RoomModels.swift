@@ -104,8 +104,11 @@ struct KoraRoomAsset: Identifiable, Codable, Hashable {
     var id = UUID()
     var fileName: String
     var codec: String
+    var fileType: String
     var supportTier: KoraFormatSupportTier = .native
     var sampleRate: Int?
+    var channels: Int?
+    var fileSizeBytes: Int64?
     var durationSeconds: Int?
     var addedAt = Date()
 }

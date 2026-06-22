@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 
 @MainActor
 final class RoomStore: ObservableObject {
@@ -150,6 +151,46 @@ final class RoomStore: ObservableObject {
         persist()
     }
 
+    func importAudio(fileURL: URL, into roomID: UUID) -> Bool {
+        guard let roomIndex = rooms.firstIndex(where: { $0.id == roomID }) else {
+            lastError = "Room not found."
+            return false
+        }
+
+        guard let asset = buildAudioAsset(from: fileURL) else {
+            return false
+        }
+
+        rooms[roomIndex].mediaAssets.append(asset)
+        let actorName = rooms[roomIndex].participants.first(where: { $0.role == .owner })?.displayName
+            ?? rooms[roomIndex].participants.first?.displayName
+            ?? "system"
+
+        rooms[roomIndex].comments.append(
+            KoraRoomComment(
+                text: "Imported \(asset.fileName)",
+                authorName: actorName
+            )
+        )
+        if rooms[roomIndex].status == .collecting {
+            rooms[roomIndex].status = .reviewing
+        }
+        rooms[roomIndex].nextActionHint = "Validate metadata and invite a reviewer before export."
+        rooms[roomIndex].updatedAt = Date()
+        if asset.supportTier == .fallback {
+            rooms[roomIndex].status = .blocked
+            rooms[roomIndex].comments.append(
+                KoraRoomComment(
+                    text: "Asset format is \(asset.supportTier.title). Export blocked until transcode path is set.",
+                    authorName: "system"
+                )
+            )
+        }
+        lastError = nil
+        persist()
+        return true
+    }
+
     func clearAll() {
         rooms = []
         invites = []
@@ -188,6 +229,114 @@ final class RoomStore: ObservableObject {
 
     private func cleanupExpiredInvites() {
         invites.removeAll(where: { $0.isExpired })
+    }
+
+    private func buildAudioAsset(from fileURL: URL) -> KoraRoomAsset? {
+        let didStartAccess = fileURL.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccess {
+                fileURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        guard fileURL.isFileURL else {
+            lastError = "Only local files are supported."
+            return nil
+        }
+
+        let asset = AVURLAsset(url: fileURL)
+        let audioTracks = asset.tracks(withMediaType: .audio)
+        guard let track = audioTracks.first else {
+            lastError = "Selected file is not a recognized audio file."
+            return nil
+        }
+
+        let extensionHint = fileURL.pathExtension.lowercased()
+        let mediaType = extensionHint.isEmpty ? "audio" : extensionHint
+        let tier = supportTier(for: mediaType)
+        if tier == .unsupported {
+            lastError = "Unsupported audio format for MVP import."
+            return nil
+        }
+
+        var fileSize: Int64?
+        if let fileSizeValue = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+            fileSize = Int64(fileSizeValue)
+        }
+
+        let sampleRate = trackAudioSampleRate(track)
+        let channels = trackChannelCount(track)
+
+        let codec = resolvedAudioCodec(from: track.formatDescriptions)
+        let durationSeconds = Int(CMTimeGetSeconds(asset.duration).rounded())
+
+        if durationSeconds < 0 || (asset.duration.seconds).isInfinite || asset.duration.seconds.isNaN {
+            lastError = "Unable to read audio duration."
+            return nil
+        }
+
+        if durationSeconds <= 0 {
+            lastError = "Duration unavailable; please verify file integrity."
+            return nil
+        }
+
+        return KoraRoomAsset(
+            fileName: fileURL.lastPathComponent,
+            codec: codec,
+            fileType: mediaType,
+            supportTier: tier,
+            sampleRate: sampleRate,
+            channels: channels,
+            fileSizeBytes: fileSize,
+            durationSeconds: durationSeconds
+        )
+    }
+
+    private func supportTier(for fileType: String) -> KoraFormatSupportTier {
+        let nativeCodecs: Set<String> = [
+            "wav", "aiff", "aif", "flac", "alac", "mp3", "aac", "m4a", "ogg", "opus", "caf", "aifc"
+        ]
+        let fallbackCodecs: Set<String> = ["dts", "wma", "amr", "adpcm", "hev1", "he-aac", "avc"]
+        if nativeCodecs.contains(fileType) { return .native }
+        if fallbackCodecs.contains(fileType) { return .fallback }
+        return .unsupported
+    }
+
+    private func resolvedAudioCodec(from descriptions: [Any]) -> String {
+        guard let formatDescription = descriptions.first as? CMAudioFormatDescription,
+              let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription) else {
+            return "audio"
+        }
+        let formatID = asbd.pointee.mFormatID
+        return fourCCString(formatID)
+    }
+
+    private func trackAudioSampleRate(_ track: AVAssetTrack) -> Int? {
+        guard let formatDescription = track.formatDescriptions.first as? CMAudioFormatDescription,
+              let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription) else {
+            return nil
+        }
+        let sampleRate = Int(asbd.pointee.mSampleRate)
+        return sampleRate > 0 ? sampleRate : nil
+    }
+
+    private func trackChannelCount(_ track: AVAssetTrack) -> Int? {
+        guard let formatDescription = track.formatDescriptions.first as? CMAudioFormatDescription,
+              let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription) else {
+            return nil
+        }
+        let channels = Int(asbd.pointee.mChannelsPerFrame)
+        return channels > 0 ? channels : nil
+    }
+
+    private func fourCCString(_ value: UInt32) -> String {
+        let bytes: [UInt8] = [
+            UInt8((value >> 24) & 0xFF),
+            UInt8((value >> 16) & 0xFF),
+            UInt8((value >> 8) & 0xFF),
+            UInt8(value & 0xFF)
+        ]
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     private func generateInviteCode() -> String {

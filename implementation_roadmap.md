@@ -61,11 +61,14 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
   - [x] Invite generation and consumption path.
   - [x] Local role state (`owner`, `editor`, `reviewer`).
   - [x] Room-first status and self-service hinting.
-- [ ] Implement `mvp-audio` local import and metadata extraction.
+- [x] Implement `mvp-audio` local import and metadata extraction:
+  - [x] File chooser and room attachment.
+  - [x] duration/sample-rate/channel metadata extraction.
+  - [x] support tier classification + status fallback behavior.
 - [ ] Implement `mvp-quality` hard-stop and warning checks.
 - [ ] Ship `mvp-ui` minimal room review interface improvements.
 
-Current run focus: `mvp-audio`.
+Current run focus: `mvp-quality`.
 
 ## Phase 1 — v0.9 MVP
 

@@ -63,6 +63,11 @@ A practical but minimal starting point:
 - role state for owner/editor/reviewer,
 - participant presence and status transitions.
 
+`mvp-audio` is also in place:
+- local audio file import directly into room,
+- metadata extraction for duration/sample-rate/channels,
+- support tier assignment and blocked status when fallback paths are needed.
+
 ## Install path
 
 ### For users

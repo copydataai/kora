@@ -1,4 +1,8 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+import UniformTypeIdentifiers
+#endif
 
 struct RoomWorkspaceView: View {
     @StateObject private var store = RoomStore()
@@ -184,6 +188,7 @@ private struct RoomDetailView: View {
     @State private var generatedInviteCode: String?
     @State private var nextActionDraft: String = ""
     @State private var showCopiedHint = false
+    @State private var importError: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -332,14 +337,34 @@ private struct RoomDetailView: View {
             Text("Media")
                 .font(.headline)
 
+            Button("Import local audio") {
+                importLocalAudio()
+            }
+            .buttonStyle(.borderedProminent)
+
+            if let importError {
+                Text(importError)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            } else if let error = store.lastError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+
             if room.mediaAssets.isEmpty {
-                Text("No audio imported yet. (mvp-audio milestone in next step.)")
+                Text("No audio imported yet. Add audio first to progress review.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(room.mediaAssets) { asset in
                     HStack {
                         Text(asset.fileName)
+                            .lineLimit(1)
+                        Text("•")
+                            .foregroundStyle(.secondary)
+                        Text("Type: \(asset.fileType)")
+                            .foregroundStyle(.secondary)
                         Text("•")
                             .foregroundStyle(.secondary)
                         Text(asset.codec)
@@ -348,9 +373,30 @@ private struct RoomDetailView: View {
                             .foregroundStyle(.secondary)
                         Text(asset.supportTier.title)
                             .foregroundStyle(.secondary)
+                        if let sampleRate = asset.sampleRate {
+                            Text("•")
+                            Text("\(sampleRate)Hz")
+                                .foregroundStyle(.secondary)
+                        }
+                        if let channels = asset.channels {
+                            Text("•")
+                            Text("\(channels)ch")
+                                .foregroundStyle(.secondary)
+                        }
+                        if let fileSizeBytes = asset.fileSizeBytes {
+                            Text("•")
+                            Text(humanReadableSize(fileSizeBytes))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .font(.caption)
                 }
+            }
+
+            if room.status == .readyToExport || room.status == .exported {
+                Text("Ready to continue with export and quality checks.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -368,6 +414,44 @@ private struct RoomDetailView: View {
             }
             .buttonStyle(.bordered)
         }
+    }
+
+    private func importLocalAudio() {
+        #if os(macOS)
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [
+            .aiff,
+            .wav,
+            .mp3,
+            .mpeg4Audio,
+            .mpeg4Movie,
+            .quickTimeMovie,
+            .audio
+        ]
+        panel.message = "Choose a local audio file for this room."
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let success = store.importAudio(fileURL: url, into: room.id)
+        importError = success ? nil : (store.lastError ?? "Unable to import audio.")
+        if !success { return }
+        showCopiedHint = false
+        #else
+        importError = "Audio import is available on macOS only."
+        #endif
+    }
+
+    private func humanReadableSize(_ bytes: Int64) -> String {
+        let units = ["B", "KB", "MB", "GB"]
+        var value = Double(bytes)
+        var index = 0
+        while value >= 1024 && index < units.count - 1 {
+            value /= 1024
+            index += 1
+        }
+        if index == 0 { return "\(Int(value)) \(units[index])" }
+        return String(format: "%.1f %@", value, units[index])
     }
 }
 
