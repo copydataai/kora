@@ -71,10 +71,10 @@ fi
 pass "Export produced ${EXPORT_DIR}/${SCHEME}.app"
 
 echo "==> Source deep-link contract checks"
-if ! grep -q "kora://rooms" "kora/koraApp.swift"; then
-  fail "App URL handler no longer advertises kora://rooms"
+if ! grep -q "url.host == \"rooms\"" "kora/koraApp.swift"; then
+  fail "App URL handler no longer advertises rooms deep-link routing"
 fi
-if ! grep -q "kora://room" "kora/koraApp.swift"; then
+if ! grep -q "url.host == \"room\"" "kora/koraApp.swift"; then
   fail "Room deep-link handling contract missing in app source"
 fi
 pass "Deep-link contract present in source"
