@@ -34,12 +34,18 @@ The design must support the full product plan, not only MVP:
    - native panes/windows,
    - predictable menu and shortcut flow.
 
+6. **Restraint-first visual language**
+   - whitespace-led composition,
+   - strong typographic hierarchy,
+   - low-contrast status chips,
+   - short transition moments only.
+
 ## Design for v0.9 vs v1.0
 
 ### v0.9 design behavior
 
 - Focused audio flow only.
-- Immediate room creation/joining and playback review.
+- Immediate room creation/joining, invite handling, and room-first role visibility.
 - Compact comments and approvals.
 
 ### v1.0 design behavior
@@ -94,10 +100,13 @@ Before approving a feature release:
 
 ## Current implementation anchor
 
-The app currently includes a local execution scaffold:
+The app currently includes an execution scaffold plus room MVP:
 
-- Phase list and goals in [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/ExecutionPlan.swift)
-- Phase selection and milestone checklist in [ContentView.swift](/Users/josesanchez/Developer/public/kora/kora/ContentView.swift)
+- Phase list and goals in [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionPlan.swift)
+- Phase selection and milestone checklist in [ExecutionTrackerView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionTrackerView.swift)
+- Room creation, invite, and role workflow in [RoomWorkspaceView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomWorkspaceView.swift)
+- Room domain model and persistence in [RoomModels.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomModels.swift)
+- Room collaboration state store in [RoomStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomStore.swift)
 
 Design implication:
 - Keep this scaffold minimal and non-blocking.

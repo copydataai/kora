@@ -19,8 +19,8 @@ Goal: turn strategy into executable backlog.
   - `design.md` for UI constraints and quality signal behavior.
   - `implementation_roadmap.md` with explicit milestones.
 - App implementation started:
-  - `ExecutionPlan.swift` containing phases, goals, and milestones.
-  - `ContentView.swift` rendering phase selector + milestone checklists.
+  - `kora/ExecutionPlan.swift` containing phases, goals, and milestones.
+  - `kora/ExecutionTrackerView.swift` and `kora/PhaseExecutionStore.swift` rendering the checklist loop.
   - `koraApp.swift` simplified app shell for local progress execution.
 
 Acceptance:
@@ -53,6 +53,19 @@ Current loop state is stored locally and persisted to user storage so progress i
 - [ ] Start v0.9 execution milestones.
 
 Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
+
+### Loop run #2 (2026-06-22)
+
+- [x] Implement `mvp-room` in app:
+  - [x] Room model and lifecycle.
+  - [x] Invite generation and consumption path.
+  - [x] Local role state (`owner`, `editor`, `reviewer`).
+  - [x] Room-first status and self-service hinting.
+- [ ] Implement `mvp-audio` local import and metadata extraction.
+- [ ] Implement `mvp-quality` hard-stop and warning checks.
+- [ ] Ship `mvp-ui` minimal room review interface improvements.
+
+Current run focus: `mvp-audio`.
 
 ## Phase 1 — v0.9 MVP
 
@@ -118,4 +131,8 @@ Acceptance:
 
 ## Current implementation anchor
 
-The running app currently includes a local execution checklist to track phase progress. It is intentionally minimal and is the first concrete implementation step toward this roadmap.
+The running app now includes:
+- local execution checklist and runable loops for phase control,
+- room-first collaborative MVP surface in-app.
+
+It remains intentionally minimal and can be iterated in the next loop milestone without changing architecture.

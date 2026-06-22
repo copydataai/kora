@@ -20,11 +20,20 @@ We optimize for real workflow utility first:
 ## Current implementation status
 
 We now have a phased execution scaffold in the app:
-- [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/ExecutionPlan.swift)
-- [ContentView.swift](/Users/josesanchez/Developer/public/kora/kora/ContentView.swift)
+- [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionPlan.swift)
+- [PhaseExecutionStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/PhaseExecutionStore.swift)
+- [ExecutionTrackerView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionTrackerView.swift)
+- [RoomModels.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomModels.swift)
+- [RoomStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomStore.swift)
+- [RoomWorkspaceView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomWorkspaceView.swift)
 - [implementation_roadmap.md](/Users/josesanchez/Developer/public/kora/kora/implementation_roadmap.md)
 
-This shows active phases and checklist progress directly in the local UI.
+The active app now includes:
+- an execution loop for phase milestones,
+- a local multiplayer-first room surface,
+- role-aware participants,
+- invite creation and join flow,
+- and local quality hints for repeatable work.
 
 ## Recommended release target
 
@@ -47,6 +56,12 @@ A practical but minimal starting point:
 - room roles,
 - core quality checks,
 - zero external dependency setup.
+
+`mvp-room` has now moved from plan to implementation:
+- room model and lifecycle,
+- create/join workflow via short invite codes,
+- role state for owner/editor/reviewer,
+- participant presence and status transitions.
 
 ## Install path
 
@@ -81,3 +96,4 @@ The app includes a built-in planner loop for implementation:
 - complete the next pending milestone,
 - move through milestones in order,
 - and roll into the next phase when done.
+- implement real room MVP work in the same loop so the roadmap is not only strategic but shipped.

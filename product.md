@@ -39,6 +39,7 @@ Every stage must preserve context and be auditable inside the same shared projec
    - Presence state (who is in/out)
    - Real-time comments, notes, status transitions.
    - Shared ownership roles (`owner`, `editor`, `reviewer`).
+   - Deterministic room join path with short invite codes.
 
 2. **Local audio pipeline**
    - Folder/file import from local storage.
@@ -89,6 +90,16 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
    - Dedicated widget extension tied to active room and pending tasks.
    - Quick read of blockers/quality status.
    - One-tap resume into the related room state.
+
+## Current ship status against v0.9/v1.0
+
+- `mvp-room` is implemented in-app: role-aware room state, room creation, and invite join flow.
+- `mvp-audio` and quality pipeline remain next in the same phase.
+- v1.0 planning remains recommended baseline and includes:
+  - richer self-service templates/presets,
+  - signed update path,
+  - macOS widget,
+  - and video reuse of the room primitives already introduced.
 
 ## Post-MVP roadmap (non-restrictive growth)
 
@@ -168,15 +179,19 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 
 To keep planning and execution connected, this repository includes a local phase tracker:
 
-- [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/ExecutionPlan.swift)
-- [ContentView.swift](/Users/josesanchez/Developer/public/kora/kora/ContentView.swift)
+- [ExecutionPlan.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionPlan.swift)
+- [PhaseExecutionStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/PhaseExecutionStore.swift)
+- [ExecutionTrackerView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/ExecutionTrackerView.swift)
+- [RoomModels.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomModels.swift)
+- [RoomStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomStore.swift)
+- [RoomWorkspaceView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomWorkspaceView.swift)
 - [implementation_roadmap.md](/Users/josesanchez/Developer/public/kora/kora/implementation_roadmap.md)
 
 Current app work in this phase:
 
 - A persisted local-phase checklist UI for planning execution with milestone state persistence.
 - Explicit phase milestones for all roadmap stages.
-- A minimal shell focused on opening room/task planning and tracking work progress.
+- A minimal shell focused on room-first execution and milestone workflow.
 
 ### New execution loop implementation
 
