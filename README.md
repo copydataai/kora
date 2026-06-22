@@ -73,6 +73,10 @@ A practical but minimal starting point:
 - quality-aware export gate (export requires passing hard-stop checks),
 - basic sample-level clip/loudness and consistency signals shown in room workflow.
 
+`mvp-ui` now adds room-level status visibility:
+- quality banner and blocker/warning summaries,
+- explicit export readiness path and in-room export action.
+
 ## Install path
 
 ### For users

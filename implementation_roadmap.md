@@ -69,9 +69,11 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
   - [x] pre-export hard-stop detection (asset blockers, compatibility, invalid metadata),
   - [x] warning surface (clipping + loudness + channel/sample-rate consistency),
   - [x] room-aware export gate with explicit failure reasons.
-- [ ] Ship `mvp-ui` minimal room review interface improvements.
+- [x] Ship `mvp-ui` minimal room review interface improvements:
+  - [x] quality status banner and export gate state visibility in room detail.
+  - [x] explicit hard-stop warning and warning-only paths before export.
 
-Current run focus: `mvp-ui` (quality enforcement is in place; UI polish remains).
+Current run focus: `v1.0` recommended baseline (widget/packaging and templates remain).
 
 ## Phase 1 — v0.9 MVP
 

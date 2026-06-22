@@ -95,13 +95,15 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 
 - `mvp-room` is implemented in-app: role-aware room state, room creation, and invite join flow.
 - `mvp-audio` is implemented: local import + metadata extraction are now in room flow.
-- `mvp-quality` is next to close v0.9 loop.
+- `mvp-quality` is implemented: pre-export hard-stop logic, warning diagnostics, and export gating in room flow.
 - v1.0 planning remains recommended baseline and includes:
   - richer self-service templates/presets,
   - signed update path,
   - macOS widget,
   - and video reuse of the room primitives already introduced.
-- `mvp-quality` now includes pre-export hard-stop logic, warning diagnostics, and export gating in room flow.
+- `mvp-ui` is also implemented in cycle for room-level quality readability:
+  - quality banner and warning summary,
+  - explicit export readiness before action.
 
 ## Post-MVP roadmap (non-restrictive growth)
 
