@@ -103,6 +103,7 @@ A practical but minimal starting point:
 4. If you are upgrading from an older build, follow the migration notes in [INSTALL.md](/Users/josesanchez/Developer/public/kora/kora/INSTALL.md).
 5. Optionally add the Kora widget for quick room context while working outside the app.
 6. Verify deep link handling by opening `kora://rooms` or `kora://room/<id>` in your browser/shell.
+7. Verify widget onboarding and release checks in [WIDGET_EXTENSION_ONBOARDING.md](WIDGET_EXTENSION_ONBOARDING.md) and [INSTALL.md](INSTALL.md).
 
 ### For contributors
 

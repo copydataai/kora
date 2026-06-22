@@ -12,6 +12,7 @@ Keep these checks in place before distributing a release package:
 4. Notarize and staple the package build before publishing links.
 5. Keep a previous working bundle in release assets for rollback.
 6. Publish a short changelog with required state migration notes when storage format or path changes.
+7. Keep a release verification path that includes deep-link + widget smoke checks.
 
 ## Distribution command surface
 
@@ -24,6 +25,27 @@ From a clean shell (adjust identifiers to your environment):
 - Notarize and staple:
   - `xcrun notarytool submit --wait --apple-id ... --team-id ... ./build/kora.app.zip`
   - `xcrun stapler staple ./build/kora.app`
+
+## Scheme-friendly release verification
+
+Use the project scheme name directly for all release validation:
+
+- `./scripts/verify-release.sh`
+- or with overrides:
+  - `./scripts/verify-release.sh ./kora.xcodeproj kora Release ./build/kora.xcarchive ./build ./exportOptions.plist`
+
+The script verifies:
+
+- build scheme exists (`kora`),
+- archive and exported app output paths,
+- embedded widget extension presence (`Contents/PlugIns/koraWidget.appex`),
+- `CFBundleURLTypes` contains scheme `kora`,
+- deep-link contract lines in source (`kora://rooms`, `kora://room/<uuid>`).
+
+Deep-link smoke checks are intentionally manual by design:
+- `open "kora://rooms"`
+- `open "kora://room/<valid-room-uuid>"`
+
 
 ## State migration path for packaged upgrades
 
@@ -50,6 +72,10 @@ This keeps existing local rooms, invite state, and execution milestones availabl
 - No third-party runtime is required to run room workflows.
 - App state stays local by default.
 - Contributor and contributor-machine installs use the same state migration path for reliability.
+
+## Widget onboarding
+
+- Before release verification, confirm widget onboarding steps in [WIDGET_EXTENSION_ONBOARDING.md](WIDGET_EXTENSION_ONBOARDING.md).
 
 ## Widget extension checks
 

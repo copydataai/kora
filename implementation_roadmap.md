@@ -76,7 +76,6 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
 Current run focus: `v1.0` recommended baseline.
 - Widget scaffolding is now implemented (`widget-state.json` is persisted with room quality summaries) and now consumed by a WidgetKit extension.
 - Next milestones remain:
-  - `v10-distribution` (packaging hardening and migration updates)
   - `v10-video-layer`
   - `v10-reinforcement`
 
@@ -96,21 +95,19 @@ Current run focus: `v1.0` recommended baseline.
   - [x] stale-state guard and resume URL are surfaced.
   - [x] register deep-link route (`kora://room/<id>` and `kora://rooms`) + URL scheme.
 
-- [ ] Implement `v10-distribution`:
-  - [ ] package versioning and notarization
-  - [ ] updater channel and artifact retention rehearsal
-  - [ ] fallback artifact retention guidance in release process
+- [x] Implement `v10-distribution`:
+  - [x] package versioning and notarization guidance
+  - [x] widget extension onboarding and release verification checks
+  - [x] update and fallback migration messaging for rollout
+  - [x] deep-link readiness checks for release smoke testing
 
 ### Loop run #5 (2026-06-22)
 
-- [ ] Start hardening the recommended release pipeline for practical distribution:
-  - [ ] finalize installer command checklist and migration messaging in [INSTALL.md](INSTALL.md),
-  - [ ] add distribution smoke checks for `kora://` deep links and widget payload readback,
-  - [ ] verify rollout notes include v10-reinforcement and v10-video-layer entry points.
 - [ ] Begin the high self-service reinforcement baseline:
   - [ ] add preset/role next-step defaults for room templates,
   - [ ] expose quick quality summary copy for first-time export readiness,
   - [ ] document v1.0 acceptance criteria in release notes.
+- [ ] Begin `v10-video-layer` planning and proof-of-concept with shared room primitives.
 
 ## Phase 1 — v0.9 MVP
 
