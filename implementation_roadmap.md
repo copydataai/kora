@@ -49,7 +49,7 @@ Current loop state is stored locally and persisted to user storage so progress i
   - [x] Finalize phase docs.
   - [x] Define scope-contract for v0.9/v1.0.
   - [x] Add measurable KPI table placeholders for baseline milestones.
-- [x] Wire implementation engine into app (`ContentView` and `PhaseExecutionStore`).
+- [x] Wire execution engine into app (`ContentView` and `PhaseExecutionStore`).
 - [ ] Start v0.9 execution milestones.
 
 Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
@@ -74,10 +74,11 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
   - [x] explicit hard-stop warning and warning-only paths before export.
 
 Current run focus: `v1.0` recommended baseline.
-- Widget scaffolding is now in place (`widget-state.json` is persisted with room quality summaries).
+- Widget scaffolding is now implemented (`widget-state.json` is persisted with room quality summaries) and now consumed by a WidgetKit extension.
 - Next milestones remain:
-  - `v10-distribution`: packaging hardening + state migration path.
-  - `v10-widget`: actual widget extension using `widget-state.json`.
+  - `v10-distribution` (packaging hardening and migration updates)
+  - `v10-video-layer`
+  - `v10-reinforcement`
 
 ### Loop run #3 (2026-06-22)
 
@@ -85,6 +86,31 @@ Current run focus: `v1.0` recommended baseline.
   - [x] shared macOS state migration helper for room and execution data
   - [x] migration-aware persistence paths for room and checkpoint state
   - [x] installation hardening notes for signing/notarization and upgrade rollback
+
+### Loop run #4 (2026-06-22)
+
+- [x] Implement `v10-widget` with real macOS extension:
+  - [x] `koraWidget` app-extension target is added.
+  - [x] timeline provider reads `widget-state.json` with migration-aware host paths.
+  - [x] shared room snapshot cards render active room blocker and hint summary.
+  - [x] stale-state guard and resume URL are surfaced.
+  - [x] register deep-link route (`kora://room/<id>` and `kora://rooms`) + URL scheme.
+
+- [ ] Implement `v10-distribution`:
+  - [ ] package versioning and notarization
+  - [ ] updater channel and artifact retention rehearsal
+  - [ ] fallback artifact retention guidance in release process
+
+### Loop run #5 (2026-06-22)
+
+- [ ] Start hardening the recommended release pipeline for practical distribution:
+  - [ ] finalize installer command checklist and migration messaging in [INSTALL.md](INSTALL.md),
+  - [ ] add distribution smoke checks for `kora://` deep links and widget payload readback,
+  - [ ] verify rollout notes include v10-reinforcement and v10-video-layer entry points.
+- [ ] Begin the high self-service reinforcement baseline:
+  - [ ] add preset/role next-step defaults for room templates,
+  - [ ] expose quick quality summary copy for first-time export readiness,
+  - [ ] document v1.0 acceptance criteria in release notes.
 
 ## Phase 1 — v0.9 MVP
 
@@ -153,5 +179,6 @@ Acceptance:
 The running app now includes:
 - local execution checklist and runable loops for phase control,
 - room-first collaborative MVP surface in-app.
+- widget state persistence and actual WidgetKit extension target.
 
 It remains intentionally minimal and can be iterated in the next loop milestone without changing architecture.

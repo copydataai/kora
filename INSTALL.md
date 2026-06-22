@@ -50,3 +50,19 @@ This keeps existing local rooms, invite state, and execution milestones availabl
 - No third-party runtime is required to run room workflows.
 - App state stays local by default.
 - Contributor and contributor-machine installs use the same state migration path for reliability.
+
+## Widget extension checks
+
+- Verify widget embedding in packaged builds:
+  - after archive, confirm `Contents/PlugIns/koraWidget.appex` exists in the final app bundle.
+- Verify payload sharing path:
+  - open a room in Kora and confirm `widget-state.json` appears in host app support path.
+  - confirm the widget shows an active room and blocker summary on next refresh.
+
+## URL handler checks
+
+- Confirm app URL scheme registration in the release app bundle:
+  - `CFBundleURLTypes` includes scheme `kora`.
+- Confirm resume flow:
+  - open `kora://rooms` from browser/terminal and ensure the app enters the room surface.
+  - open `kora://room/<valid-uuid>` and ensure the target room becomes selected/open in `RoomWorkspaceView`.

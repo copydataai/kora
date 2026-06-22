@@ -10,6 +10,12 @@ The design must support the full product plan, not only MVP:
 - extension into video,
 - and widget visibility without adding clutter.
 
+## Design doctrine
+
+- **Minimalist baseline:** favor predictable, low-noise controls over visual density.
+- **OpenAI/Apple influence:** concise phrasing, clear hierarchy, direct system feedback.
+- **Self-reinforcement:** every screen should suggest the next useful action, not just display status.
+
 ## Core UI principles
 
 1. **Room-first context**
@@ -49,19 +55,45 @@ The design must support the full product plan, not only MVP:
 - Compact comments and approvals.
 - In-room quality pass as a required checkpoint before export, with hard-stop blockers and visible warnings.
 
+For v1.0 add:
+- explicit templates and role prompts to reinforce the next best action,
+- richer quality context while keeping the same control cadence.
+
 ### v1.0 design behavior
 
 - Persistent status timeline with reusable checkpoints.
 - Review lanes by role and state.
-- Widget-ready surface states for active rooms.
+- Widget-ready room-state surface states for active rooms.
 - Video extension in a second track with shared components.
 
 ## Widget design requirements
 
 - Small but useful glance states: room name, pending review count, critical blockers.
-- One-tap resume action to open the room from notification context.
-- Light-weight updates and explicit stale-state messaging.
-- No complex gestures; keep actions predictable.
+- Explicit stale-state signaling when payload age exceeds the refresh expectation.
+- One-tap resume action from widget into app context.
+- Low-noise visual language and readable status chips.
+- No complex gestures; predictable actions only.
+
+### Widget implementation now
+
+- `koraWidget` target is implemented with real state read:
+  - reads host payload from `widget-state.json`.
+  - shows active room blockers, warnings, and next-action hint.
+- keeps room list short and scan-first.
+- marks stale payloads to avoid accidental blind action.
+
+### Open-source + minimalism contract
+
+- keep layout hierarchy stable as features expand;
+- maintain clear status semantics and avoid ornamental UI load;
+- no behavior should require hidden defaults to proceed.
+
+### Navigation contract
+
+- Deep links:
+  - `kora://room/<uuid>` opens that room in the Room surface.
+  - `kora://rooms` opens the rooms surface.
+- Navigation state is route-scoped (single-use) to avoid replay after persistence updates.
 
 ## Format communication in UI
 
@@ -108,9 +140,10 @@ The app currently includes an execution scaffold plus room MVP:
 - Room creation, invite, and role workflow in [RoomWorkspaceView.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomWorkspaceView.swift)
 - Room domain model and persistence in [RoomModels.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomModels.swift)
 - Room collaboration state store in [RoomStore.swift](/Users/josesanchez/Developer/public/kora/kora/kora/RoomStore.swift)
+- Widget extension source in [koraWidget](/Users/josesanchez/Developer/public/kora/kora/koraWidget)
 
 Design implication:
 - Keep this scaffold minimal and non-blocking.
-- Replace placeholders with production-grade UI as each phase ship completes.
-- Progress UI is for team execution governance, not the user-facing media workflow.
+- Replace placeholders with production-grade UI as each phase ships.
+- Progress UI is for team governance, not the user-facing media workflow.
 - Preserve a clear loop narrative: `next action -> complete -> advance`.

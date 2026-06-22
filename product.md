@@ -10,6 +10,15 @@ Deliver an **end-to-end multiplayer macOS app** for local media teams with:
 4. Built-in self-service quality and collaboration controls.
 5. Widget support to keep creators in context from macOS surfaces.
 
+## North star (recommended baseline)
+
+v1.0 is the default product bar, not a “future” promise.
+- useful in one practical pass today,
+- reliable in day-to-day local team use,
+- and easy to install and maintain as collaborators scale workflows.
+
+MVP is a delivery checkpoint, not a long-term ceiling.
+
 ## Positioning
 
 Kora is open-source and macOS-first.
@@ -88,8 +97,15 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 
 4. **Widget support in macOS app**
    - Dedicated widget extension tied to active room and pending tasks.
-   - Quick read of blockers/quality status.
-   - One-tap resume into the related room state.
+   - Quick read of blockers/quality status from shared `widget-state.json`.
+  - One-tap resume intent for fast return to active room context.
+  - Deep link contract: `kora://room/<roomID>` and `kora://rooms`.
+
+### Recommended self-reinforcement behaviors
+
+- role-aware room prompts (`nextActionHint`) that keep work moving without manual checking,
+- reusable templates for recurring workflows (podcast, interview, music mix),
+- explicit blocker/warning communication in room and widget to prevent silent regressions.
 
 ## Current ship status against v0.9/v1.0
 
@@ -99,13 +115,14 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 - v1.0 planning remains recommended baseline and includes:
   - richer self-service templates/presets,
   - signed update path,
-  - macOS widget,
   - and video reuse of the room primitives already introduced.
-- `mvp-ui` is also implemented in cycle for room-level quality readability:
+- `mvp-ui` is also implemented in-cycle for room-level quality readability:
   - quality banner and warning summary,
   - explicit export readiness before action.
-- `v1.0` planning started:
-  - room widget payload persistence for pending status handoff (`Kora/widget-state.json`), used by future widget targets.
+- `v10-widget` is implemented:
+  - widget payload persistence in-app (`widget-state.json`) and
+  - macOS WidgetKit target consuming that payload for active room summaries.
+  - deep link resume routes through app `onOpenURL` and room navigation state.
 
 ## Post-MVP roadmap (non-restrictive growth)
 
@@ -218,5 +235,4 @@ Current app work in this phase:
 - Milestone state is persisted locally (in defaults + app support fallback) so progress survives relaunch.
 - The UI now identifies the next pending action and supports quick progression.
 - Completing all milestones in a phase can immediately move planning focus to the next phase.
-
-This satisfies the requirement to **create and implement** the plan, not just document it.
+- `v10-widget` is now complete and the next loop focus is `v10-distribution`, `v10-video-layer`, and reinforcement improvements.

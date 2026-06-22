@@ -1,6 +1,7 @@
 # Kora
 
 Kora is an **open-source**, macOS-only, multiplayer-first media app for local teams.
+It follows a restrained interaction model inspired by OpenAI and Apple: concise controls, clear state, and fast next-step guidance.
 
 We optimize for real workflow utility first:
 - end-to-end collaboration in one room,
@@ -14,8 +15,9 @@ We optimize for real workflow utility first:
 - Become an end-to-end local media collaboration tool, starting with audio.
 - Support most common local audio/video formats through a stable tiered matrix.
 - Make install and upgrades simple for both users and contributors.
-- Keep the interface minimal, calm, and action-focused.
+- Keep the interface minimal, calm, action-focused, and self-reinforcing.
 - Execute in phases with clear, measurable milestones.
+- Expand video support without reworking the room collaboration model.
 
 ## Current implementation status
 
@@ -33,7 +35,8 @@ The active app now includes:
 - a local multiplayer-first room surface,
 - role-aware participants,
 - invite creation and join flow,
-- and local quality hints for repeatable work.
+- local quality checks with deterministic export gating,
+- and now a real macOS widget extension for active-room glance and blocker summary.
 
 ## Recommended release target
 
@@ -42,7 +45,7 @@ We are defining **v1.0 — Recommended Production Baseline** as the goal, with:
 - Multiplayer room workflow with presence and review controls.
 - Local audio pipeline with quality checks and deterministic exports.
 - Signed distribution and update path for practical installs.
-- macOS widget support for active room context and pending actions.
+- macOS widget support for active room status and pending actions.
 - Video extension using the same collaboration model as audio.
 
 For detail, see [product.md](/Users/josesanchez/Developer/public/kora/kora/product.md).
@@ -71,14 +74,24 @@ A practical but minimal starting point:
 `mvp-quality` is now enforced in-room:
 - pre-export quality checks with hard-stop blockers and warning diagnostics,
 - quality-aware export gate (export requires passing hard-stop checks),
-- basic sample-level clip/loudness and consistency signals shown in room workflow.
+- explicit blocker/warning visibility in room workflow.
 
 `mvp-ui` now adds room-level status visibility:
-- quality banner and blocker/warning summaries,
+- quality banner and blocker summary,
 - explicit export readiness path and in-room export action.
 
-`v1.0` scaffolding has started:
-- room widget handoff payload is persisted for future macOS widgets (`widget-state.json`).
+`v10-widget` is now shipped:
+- reads shared `widget-state.json` written by the app,
+- renders active room status, blockers, and pending action hints,
+- supports widgetURL resume intent from Notification Center.
+- deep-link contract: widget taps open via `kora://room/<roomID>` or `kora://rooms`.
+
+### Baseline operating contract
+
+- OSS-first local behavior and auditable state transitions.
+- Self-service reinforcement through explicit `nextActionHint` guidance and quality flags.
+- broad audio/video support with explicit support tier communication.
+- practical installation, migration, and upgrade checks documented in [INSTALL.md](INSTALL.md).
 
 ## Install path
 
@@ -88,6 +101,8 @@ A practical but minimal starting point:
 2. Run first-time setup wizard.
 3. Open or join a room and start reviewing.
 4. If you are upgrading from an older build, follow the migration notes in [INSTALL.md](/Users/josesanchez/Developer/public/kora/kora/INSTALL.md).
+5. Optionally add the Kora widget for quick room context while working outside the app.
+6. Verify deep link handling by opening `kora://rooms` or `kora://room/<id>` in your browser/shell.
 
 ### For contributors
 
