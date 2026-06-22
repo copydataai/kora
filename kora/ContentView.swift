@@ -8,6 +8,7 @@ private enum WorkspaceSurface: String, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
+    @EnvironmentObject private var navigationState: KoraNavigationState
     @State private var surface = WorkspaceSurface.rooms
 
     var body: some View {
@@ -26,9 +27,13 @@ struct ContentView: View {
                 ExecutionTrackerView()
             }
         }
+        .onChange(of: navigationState.route) { _ in
+            surface = .rooms
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(KoraNavigationState())
 }

@@ -23,16 +23,26 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXBuildFile section */
+		13D589982FE9206F00422F48 /* koraWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 13D589992FE9206F00422F48 /* koraWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		13D5894F2FE9206700422F48 /* kora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13D5895E2FE9206800422F48 /* koraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = koraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		13D589682FE9206800422F48 /* koraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = koraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		13D589992FE9206F00422F48 /* koraWidget.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = koraWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		13D589512FE9206700422F48 /* kora */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kora;
+			sourceTree = "<group>";
+		};
+		13D5899A2FE9206F00422F48 /* koraWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = koraWidget;
 			sourceTree = "<group>";
 		};
 		13D589612FE9206800422F48 /* koraTests */ = {
@@ -53,6 +63,17 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13D5899B2FE9206F00422F48 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				13D589982FE9206F00422F48 /* koraWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		13D5895B2FE9206800422F48 /* Frameworks */ = {
@@ -76,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				13D589512FE9206700422F48 /* kora */,
+				13D5899A2FE9206F00422F48 /* koraWidget */,
 				13D589612FE9206800422F48 /* koraTests */,
 				13D5896B2FE9206800422F48 /* koraUITests */,
 				13D589502FE9206700422F48 /* Products */,
@@ -86,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				13D5894F2FE9206700422F48 /* kora.app */,
+				13D589992FE9206F00422F48 /* koraWidget.appex */,
 				13D5895E2FE9206800422F48 /* koraTests.xctest */,
 				13D589682FE9206800422F48 /* koraUITests.xctest */,
 			);
@@ -100,6 +123,7 @@
 			buildConfigurationList = 13D589722FE9206800422F48 /* Build configuration list for PBXNativeTarget "kora" */;
 			buildPhases = (
 				13D5894B2FE9206700422F48 /* Sources */,
+				13D5899B2FE9206F00422F48 /* Embed App Extensions */,
 				13D5894C2FE9206700422F48 /* Frameworks */,
 				13D5894D2FE9206700422F48 /* Resources */,
 			);
@@ -163,6 +187,28 @@
 			productReference = 13D589682FE9206800422F48 /* koraUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		13D5899F2FE9206F00422F48 /* koraWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13D589A22FE9206F00422F48 /* Build configuration list for PBXNativeTarget "koraWidget" */;
+			buildPhases = (
+				13D5899C2FE9206F00422F48 /* Frameworks */,
+				13D5899D2FE9206F00422F48 /* Resources */,
+				13D5899E2FE9206F00422F48 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				13D5899A2FE9206F00422F48 /* koraWidget */,
+			);
+			name = koraWidget;
+			packageProductDependencies = (
+			);
+			productName = koraWidget;
+			productReference = 13D589992FE9206F00422F48 /* koraWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -173,18 +219,21 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
-					13D5894E2FE9206700422F48 = {
-						CreatedOnToolsVersion = 26.3;
-					};
-					13D5895D2FE9206800422F48 = {
-						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 13D5894E2FE9206700422F48;
-					};
-					13D589672FE9206800422F48 = {
-						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 13D5894E2FE9206700422F48;
-					};
+				13D5894E2FE9206700422F48 = {
+					CreatedOnToolsVersion = 26.3;
 				};
+				13D5895D2FE9206800422F48 = {
+					CreatedOnToolsVersion = 26.3;
+					TestTargetID = 13D5894E2FE9206700422F48;
+				};
+				13D589672FE9206800422F48 = {
+					CreatedOnToolsVersion = 26.3;
+					TestTargetID = 13D5894E2FE9206700422F48;
+				};
+				13D5899F2FE9206F00422F48 = {
+					CreatedOnToolsVersion = 26.3;
+				};
+			};
 			};
 			buildConfigurationList = 13D5894A2FE9206600422F48 /* Build configuration list for PBXProject "kora" */;
 			developmentRegion = en;
@@ -203,6 +252,7 @@
 				13D5894E2FE9206700422F48 /* kora */,
 				13D5895D2FE9206800422F48 /* koraTests */,
 				13D589672FE9206800422F48 /* koraUITests */,
+				13D5899F2FE9206F00422F48 /* koraWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -247,6 +297,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		13D589642FE9206800422F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13D5899C2FE9206F00422F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13D5899D2FE9206F00422F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13D5899E2FE9206F00422F48 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -384,21 +455,30 @@
 			name = Release;
 		};
 		13D589732FE9206800422F48 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+					CODE_SIGN_STYLE = Automatic;
+					CURRENT_PROJECT_VERSION = 1;
+					ENABLE_APP_SANDBOX = YES;
+					ENABLE_PREVIEWS = YES;
+					ENABLE_USER_SELECTED_FILES = readonly;
+					GENERATE_INFOPLIST_FILE = YES;
+					INFOPLIST_KEY_CFBundleURLTypes = (
+						{
+							CFBundleTypeRole = Viewer;
+							CFBundleURLName = "app.copydataai.kora";
+							CFBundleURLSchemes = (
+								kora,
+							);
+						},
+					);
+					"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+					"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
@@ -426,23 +506,32 @@
 			name = Debug;
 		};
 		13D589742FE9206800422F48 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+					CODE_SIGN_STYLE = Automatic;
+					CURRENT_PROJECT_VERSION = 1;
+					ENABLE_APP_SANDBOX = YES;
+					ENABLE_PREVIEWS = YES;
+					ENABLE_USER_SELECTED_FILES = readonly;
+					GENERATE_INFOPLIST_FILE = YES;
+					INFOPLIST_KEY_CFBundleURLTypes = (
+						{
+							CFBundleTypeRole = Viewer;
+							CFBundleURLName = "app.copydataai.kora";
+							CFBundleURLSchemes = (
+								kora,
+							);
+						},
+					);
+					"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+					"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+					"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+					"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+					"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -565,6 +654,54 @@
 			};
 			name = Release;
 		};
+			13D589A02FE9206F00422F48 /* Debug */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					CODE_SIGN_STYLE = Automatic;
+					CURRENT_PROJECT_VERSION = 1;
+					GENERATE_INFOPLIST_FILE = YES;
+					MACOSX_DEPLOYMENT_TARGET = 15.7;
+					MARKETING_VERSION = 1.0;
+					INFOPLIST_KEY_NSExtension = {
+						NSExtensionPointIdentifier = "com.apple.widgetkit";
+						NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
+					};
+					INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit";
+					INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
+					PRODUCT_BUNDLE_IDENTIFIER = app.copydataai.kora.widget;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SDKROOT = macosx;
+					SKIP_INSTALL = YES;
+					SWIFT_VERSION = 5.0;
+				SUPPORTED_PLATFORMS = macosx;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+			13D589A12FE9206F00422F48 /* Release */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					CODE_SIGN_STYLE = Automatic;
+					CURRENT_PROJECT_VERSION = 1;
+					GENERATE_INFOPLIST_FILE = YES;
+					MACOSX_DEPLOYMENT_TARGET = 15.7;
+					MARKETING_VERSION = 1.0;
+					INFOPLIST_KEY_NSExtension = {
+						NSExtensionPointIdentifier = "com.apple.widgetkit";
+						NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
+					};
+					INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit";
+					INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
+					PRODUCT_BUNDLE_IDENTIFIER = app.copydataai.kora.widget;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SDKROOT = macosx;
+					SKIP_INSTALL = YES;
+					SWIFT_VERSION = 5.0;
+				SUPPORTED_PLATFORMS = macosx;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -600,6 +737,15 @@
 			buildConfigurations = (
 				13D589792FE9206800422F48 /* Debug */,
 				13D5897A2FE9206800422F48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		13D589A22FE9206F00422F48 /* Build configuration list for PBXNativeTarget "koraWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13D589A02FE9206F00422F48 /* Debug */,
+				13D589A12FE9206F00422F48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 #endif
 
 struct RoomWorkspaceView: View {
+    @EnvironmentObject private var navigationState: KoraNavigationState
     @StateObject private var store = RoomStore()
     @State private var selectedRoomID: UUID?
     @State private var showCreateRoom = false
@@ -156,6 +157,46 @@ struct RoomWorkspaceView: View {
             }
             .padding()
             .frame(minWidth: 360)
+        }
+        .onAppear {
+            applyPendingNavigationRoute()
+        }
+        .onChange(of: selectedRoomID) { newRoomID in
+            store.setActiveRoom(newRoomID)
+        }
+        .onChange(of: navigationState.route) { _ in
+            applyPendingNavigationRoute()
+        }
+    }
+
+    private func applyPendingNavigationRoute() {
+        guard let route = navigationState.route else {
+            return
+        }
+
+        switch route {
+        case .rooms:
+            if selectedRoomID == nil {
+                selectedRoomID = store.activeRoomID ?? store.sortedRooms.first?.id
+                if let selectedRoomID {
+                    store.setActiveRoom(selectedRoomID)
+                }
+            }
+            navigationState.clearRoute()
+        case .room(let roomID):
+            if let targetRoom = store.room(by: roomID) {
+                selectedRoomID = targetRoom.id
+                store.setActiveRoom(targetRoom.id)
+            } else if let activeRoom = store.activeRoom {
+                selectedRoomID = activeRoom.id
+                store.setActiveRoom(activeRoom.id)
+            } else if let firstRoom = store.sortedRooms.first {
+                selectedRoomID = firstRoom.id
+                store.setActiveRoom(firstRoom.id)
+            } else {
+                selectedRoomID = nil
+            }
+            navigationState.clearRoute()
         }
     }
 
@@ -598,4 +639,5 @@ private struct RoomDetailView: View {
 
 #Preview {
     RoomWorkspaceView()
+        .environmentObject(KoraNavigationState())
 }
