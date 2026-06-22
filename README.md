@@ -87,6 +87,7 @@ A practical but minimal starting point:
 1. Download the macOS app package.
 2. Run first-time setup wizard.
 3. Open or join a room and start reviewing.
+4. If you are upgrading from an older build, follow the migration notes in [INSTALL.md](/Users/josesanchez/Developer/public/kora/kora/INSTALL.md).
 
 ### For contributors
 
@@ -94,6 +95,7 @@ A practical but minimal starting point:
 2. Open in Xcode.
 3. Build and run.
 4. Contribute adapters, quality rules, and UI improvements through standard PR flow.
+5. Read [INSTALL.md](/Users/josesanchez/Developer/public/kora/kora/INSTALL.md) before generating release artifacts.
 
 ## Design reference
 

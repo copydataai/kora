@@ -75,7 +75,16 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
 
 Current run focus: `v1.0` recommended baseline.
 - Widget scaffolding is now in place (`widget-state.json` is persisted with room quality summaries).
-- Next milestones remain: signed packaging pipeline and actual widget extension.
+- Next milestones remain:
+  - `v10-distribution`: packaging hardening + state migration path.
+  - `v10-widget`: actual widget extension using `widget-state.json`.
+
+### Loop run #3 (2026-06-22)
+
+- [x] Start v1.0 execution by preparing installer hardening and migration path:
+  - [x] shared macOS state migration helper for room and execution data
+  - [x] migration-aware persistence paths for room and checkpoint state
+  - [x] installation hardening notes for signing/notarization and upgrade rollback
 
 ## Phase 1 — v0.9 MVP
 

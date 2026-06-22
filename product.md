@@ -162,6 +162,7 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
    - room invite onboarding,
    - sample workflow suggestion.
 4. Optional update channel and automatic migration messages.
+5. For macOS packaging upgrades, follow the migration policy in [INSTALL.md](/Users/josesanchez/Developer/public/kora/kora/INSTALL.md).
 
 ### Contributor install
 
@@ -169,6 +170,15 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 2. Open project in Xcode.
 3. Build and run the app target.
 4. Keep local format adapter modules editable for rapid contribution.
+
+### Release hardening and migration policy
+
+- State is persisted as local JSON in `RoomStore` and `PhaseExecutionStore` at:
+  - `~/Library/Application Support/Kora/<bundle id>/room-state.json`
+  - `~/Library/Application Support/Kora/<bundle id>/milestone-state.json`
+  - `~/Library/Application Support/Kora/<bundle id>/widget-state.json`
+- Startup migration reads from legacy flat storage paths and nested namespace variants, then writes forward to the canonical namespace.
+- Release builds should verify signing, notarization, and rollback artifact retention.
 
 ## Non-goals (initially)
 
