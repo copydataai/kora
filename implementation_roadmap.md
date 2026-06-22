@@ -26,6 +26,22 @@ Goal: turn strategy into executable backlog.
 Acceptance:
 - Team can open the app and see active phase + milestones.
 - Each milestone can be marked complete to track progress.
+- The same phase can be advanced via the in-app execution loop:
+  - identify the next pending milestone,
+  - mark it complete,
+  - auto-recommend the next phase when all milestones are done.
+
+## Execution loop: repeatable cycle
+
+The loop is now runnable:
+
+1. Open a phase.
+2. Run the top "Next action" milestone.
+3. Complete it.
+4. Continue until the phase is fully complete.
+5. Advance to the next phase.
+
+Current loop state is stored locally and persisted to user storage so progress is preserved across launches.
 
 ## Phase 1 — v0.9 MVP
 
@@ -92,4 +108,3 @@ Acceptance:
 ## Current implementation anchor
 
 The running app currently includes a local execution checklist to track phase progress. It is intentionally minimal and is the first concrete implementation step toward this roadmap.
-

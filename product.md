@@ -174,8 +174,14 @@ To keep planning and execution connected, this repository includes a local phase
 
 Current app work in this phase:
 
-- A persisted-free, local-phase checklist UI for planning execution.
+- A persisted local-phase checklist UI for planning execution with milestone state persistence.
 - Explicit phase milestones for all roadmap stages.
 - A minimal shell focused on opening room/task planning and tracking work progress.
+
+### New execution loop implementation
+
+- Milestone state is persisted locally (in defaults + app support fallback) so progress survives relaunch.
+- The UI now identifies the next pending action and supports quick progression.
+- Completing all milestones in a phase can immediately move planning focus to the next phase.
 
 This satisfies the requirement to **create and implement** the plan, not just document it.

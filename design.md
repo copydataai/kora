@@ -103,3 +103,4 @@ Design implication:
 - Keep this scaffold minimal and non-blocking.
 - Replace placeholders with production-grade UI as each phase ship completes.
 - Progress UI is for team execution governance, not the user-facing media workflow.
+- Preserve a clear loop narrative: `next action -> complete -> advance`.

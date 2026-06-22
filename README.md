@@ -72,3 +72,12 @@ Implementation decisions and UI criteria are in:
 Execution details are in:
 
 - [implementation_roadmap.md](/Users/josesanchez/Developer/public/kora/kora/implementation_roadmap.md)
+
+## Iteration loop (used now)
+
+The app includes a built-in planner loop for implementation:
+
+- open a phase,
+- complete the next pending milestone,
+- move through milestones in order,
+- and roll into the next phase when done.
