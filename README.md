@@ -1,6 +1,6 @@
 # Kora
 
-A minimal, native macOS music player. Point it at your music folders and play —
+A minimal, native macOS music player. Point it at your music folders and play -
 no library import, no accounts, no clutter.
 
 ## Features
@@ -24,9 +24,9 @@ open kora.xcodeproj   # then Run the "kora" scheme (Cmd-R)
 
 ## Project layout
 
-- `kora/` — the app (SwiftUI). Player engine in `MusicPlayer.swift`, library in `MusicLibrary.swift`, UI in `ContentView.swift` + `*View.swift`.
-- `koraWidget/` — the now-playing WidgetKit extension.
-- `koraTests/` — unit tests for scan, queue, and bookmark persistence.
+- `kora/` - the app (SwiftUI). Player engine in `MusicPlayer.swift`, library in `MusicLibrary.swift`, UI in `ContentView.swift` + `*View.swift`.
+- `koraWidget/` - the now-playing WidgetKit extension.
+- `koraTests/` - unit tests for scan, queue, and bookmark persistence.
 
 ## License
 
