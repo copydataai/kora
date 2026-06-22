@@ -9,13 +9,29 @@ final class MusicPlayer: ObservableObject {
     @Published private(set) var duration: TimeInterval = 0
     @Published private(set) var isPlaying = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var artist: String?
+    @Published private(set) var artwork: Data?
+    @Published var volume: Double {
+        didSet {
+            player?.volume = Float(volume)
+            UserDefaults.standard.set(volume, forKey: "player.volume")
+        }
+    }
+
+    var onTrackChange: ((Track?, Bool) -> Void)?
 
     private var player: AVAudioPlayer?
     private var progressTimer: Timer?
     private var securityScopedURL: URL?
+    private var queue = PlayQueue(tracks: [], startAt: 0)
 
     var hasTrack: Bool {
         player != nil
+    }
+
+    init() {
+        let saved = UserDefaults.standard.object(forKey: "player.volume") as? Double
+        self.volume = saved ?? 1.0
     }
 
     func load(url: URL) {
@@ -69,6 +85,7 @@ final class MusicPlayer: ObservableObject {
             errorMessage = nil
             startTimer()
         }
+        onTrackChange?(queue.current, isPlaying)
     }
 
     func stop() {
@@ -77,6 +94,7 @@ final class MusicPlayer: ObservableObject {
         currentTime = 0
         isPlaying = false
         stopTimer()
+        onTrackChange?(queue.current, false)
     }
 
     func seek(to time: TimeInterval) {
@@ -89,6 +107,46 @@ final class MusicPlayer: ObservableObject {
 
     func reportFileSelectionFailure() {
         errorMessage = "Could not choose an audio file."
+    }
+
+    func play(track: Track, in tracks: [Track]) {
+        let start = tracks.firstIndex(of: track) ?? 0
+        queue = PlayQueue(tracks: tracks, startAt: start)
+        loadAndPlayCurrent()
+    }
+
+    func next() {
+        guard queue.next() != nil else { return }
+        loadAndPlayCurrent()
+    }
+
+    func previous() {
+        guard queue.previous() != nil else { return }
+        loadAndPlayCurrent()
+    }
+
+    private func loadAndPlayCurrent() {
+        guard let track = queue.current else { return }
+        load(url: track.url)              // existing method sets player/duration/etc.
+        player?.volume = Float(volume)
+        currentTrackName = track.title
+        artist = track.artist
+        player?.play()
+        isPlaying = true
+        startTimer()
+        onTrackChange?(track, true)
+        Task { await refreshMetadata(for: track) }
+    }
+
+    private func refreshMetadata(for track: Track) async {
+        let meta = await track.loadMetadata()
+        let art = await track.loadArtwork()
+        // Guard against a newer track having started while we awaited.
+        guard queue.current?.id == track.id else { return }
+        currentTrackName = meta.title
+        artist = meta.artist
+        artwork = art
+        onTrackChange?(queue.current, isPlaying)
     }
 
     private func startTimer() {
@@ -120,8 +178,12 @@ final class MusicPlayer: ObservableObject {
             stopTimer()
 
             if duration > 0, currentTime >= duration - 0.25 {
-                player.currentTime = 0
-                currentTime = 0
+                if queue.hasNext {
+                    next()
+                } else {
+                    stop()
+                    onTrackChange?(queue.current, false)
+                }
             }
         }
     }
