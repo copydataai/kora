@@ -6,6 +6,7 @@ final class MusicLibrary: ObservableObject {
     struct Folder: Identifiable, Hashable {
         let id: UUID
         let url: URL
+        let bookmark: Data
         var name: String { url.lastPathComponent }
         var tracks: [Track]
     }
@@ -45,18 +46,14 @@ final class MusicLibrary: ObservableObject {
         var saved = currentBookmarks()
         saved.append(bookmark)
         persist(saved)
-        ingest(url: url)
+        ingest(url: url, bookmark: bookmark)
     }
 
     func forget(_ folder: Folder) {
         folder.url.stopAccessingSecurityScopedResource()
         accessedURLs.removeAll { $0 == folder.url }
         folders.removeAll { $0.id == folder.id }
-        // Re-derive surviving bookmarks from remaining folders.
-        let surviving = folders.compactMap { f in
-            try? f.url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-        }
-        persist(surviving)
+        persist(folders.map(\.bookmark))
     }
 
     func restore() {
@@ -66,18 +63,18 @@ final class MusicLibrary: ObservableObject {
                 resolvingBookmarkData: bookmark, options: .withSecurityScope,
                 relativeTo: nil, bookmarkDataIsStale: &stale
             ), !stale else { continue }   // drop stale silently
-            ingest(url: url)
+            ingest(url: url, bookmark: bookmark)
         }
     }
 
     // MARK: Internal
 
-    private func ingest(url: URL) {
+    private func ingest(url: URL, bookmark: Data) {
         let accessed = url.startAccessingSecurityScopedResource()
         if accessed { accessedURLs.append(url) }
         let folderID = UUID()
         let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folderID) }
-        folders.append(Folder(id: folderID, url: url, tracks: tracks))
+        folders.append(Folder(id: folderID, url: url, bookmark: bookmark, tracks: tracks))
     }
 
     private func currentBookmarks() -> [Data] {
