@@ -47,6 +47,7 @@ The design must support the full product plan, not only MVP:
 - Focused audio flow only.
 - Immediate room creation/joining, invite handling, and room-first role visibility.
 - Compact comments and approvals.
+- In-room quality pass as a required checkpoint before export, with hard-stop blockers and visible warnings.
 
 ### v1.0 design behavior
 

@@ -101,6 +101,7 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
   - signed update path,
   - macOS widget,
   - and video reuse of the room primitives already introduced.
+- `mvp-quality` now includes pre-export hard-stop logic, warning diagnostics, and export gating in room flow.
 
 ## Post-MVP roadmap (non-restrictive growth)
 
@@ -140,6 +141,10 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 - Each tier has explicit supported/partial/unsupported states.
 - If conversion is used, it must be declared in the session history.
 - Fallback behavior must keep creators informed and offer a clear reconfigure path.
+- For pre-export quality in v0.9:
+  - hard-stop blockers prevent export.
+  - warnings remain exportable but explicit in-room and actionable.
+  - quality state is stored per room and refreshed by local checks.
 
 ## Practical installation path
 

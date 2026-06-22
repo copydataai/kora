@@ -65,10 +65,13 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
   - [x] File chooser and room attachment.
   - [x] duration/sample-rate/channel metadata extraction.
   - [x] support tier classification + status fallback behavior.
-- [ ] Implement `mvp-quality` hard-stop and warning checks.
+- [x] Implement `mvp-quality` hard-stop and warning checks:
+  - [x] pre-export hard-stop detection (asset blockers, compatibility, invalid metadata),
+  - [x] warning surface (clipping + loudness + channel/sample-rate consistency),
+  - [x] room-aware export gate with explicit failure reasons.
 - [ ] Ship `mvp-ui` minimal room review interface improvements.
 
-Current run focus: `mvp-quality`.
+Current run focus: `mvp-ui` (quality enforcement is in place; UI polish remains).
 
 ## Phase 1 — v0.9 MVP
 

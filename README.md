@@ -68,6 +68,11 @@ A practical but minimal starting point:
 - metadata extraction for duration/sample-rate/channels,
 - support tier assignment and blocked status when fallback paths are needed.
 
+`mvp-quality` is now enforced in-room:
+- pre-export quality checks with hard-stop blockers and warning diagnostics,
+- quality-aware export gate (export requires passing hard-stop checks),
+- basic sample-level clip/loudness and consistency signals shown in room workflow.
+
 ## Install path
 
 ### For users
