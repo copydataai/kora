@@ -190,3 +190,22 @@ struct KoraRoom: Identifiable, Codable, Hashable {
     var qualityLastCheckedAt: Date?
     var qualityCanExport: Bool = false
 }
+
+struct KoraRoomWidgetSnapshot: Identifiable, Codable, Hashable {
+    var id: UUID
+    var roomName: String
+    var ownerDisplayName: String
+    var status: KoraRoomStatus
+    var memberCount: Int
+    var mediaCount: Int
+    var qualityHardStops: Int
+    var qualityWarnings: Int
+    var nextActionHint: String
+    var updatedAt: Date
+}
+
+struct KoraWidgetPayload: Codable, Hashable {
+    var activeRoomID: UUID?
+    var rooms: [KoraRoomWidgetSnapshot]
+    var generatedAt: Date
+}

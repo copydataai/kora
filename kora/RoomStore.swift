@@ -151,6 +151,10 @@ final class RoomStore: ObservableObject {
         persist()
     }
 
+    func currentWidgetPayload() -> KoraWidgetPayload {
+        buildWidgetPayload()
+    }
+
     func importAudio(fileURL: URL, into roomID: UUID) -> Bool {
         guard let roomIndex = rooms.firstIndex(where: { $0.id == roomID }) else {
             lastError = "Room not found."
@@ -294,6 +298,7 @@ final class RoomStore: ObservableObject {
         if let data = try? encoder.encode(state) {
             UserDefaults.standard.set(data, forKey: storageKey)
             saveToFile(data)
+            saveWidgetPayload(buildWidgetPayload())
         }
     }
 
@@ -665,6 +670,43 @@ final class RoomStore: ObservableObject {
 
     private func saveToFile(_ data: Data) {
         try? data.write(to: fileURL(), options: .atomic)
+    }
+
+    private func widgetFileURL() -> URL {
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        let base = appSupport?.appendingPathComponent("Kora") ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        return base.appendingPathComponent("widget-state.json")
+    }
+
+    private func saveWidgetPayload(_ payload: KoraWidgetPayload) {
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(payload) {
+            try? data.write(to: widgetFileURL(), options: .atomic)
+        }
+    }
+
+    private func buildWidgetPayload() -> KoraWidgetPayload {
+        let snapshots: [KoraRoomWidgetSnapshot] = sortedRooms.prefix(4).map { room in
+            let hardStops = room.qualityIssues.filter { $0.severity == .hardStop }.count
+            let warnings = room.qualityIssues.filter { $0.severity == .warning }.count
+            return KoraRoomWidgetSnapshot(
+                id: room.id,
+                roomName: room.name,
+                ownerDisplayName: room.ownerDisplayName,
+                status: room.status,
+                memberCount: room.participants.count,
+                mediaCount: room.mediaAssets.count,
+                qualityHardStops: hardStops,
+                qualityWarnings: warnings,
+                nextActionHint: room.nextActionHint,
+                updatedAt: room.updatedAt
+            )
+        }
+        return KoraWidgetPayload(
+            activeRoomID: activeRoomID,
+            rooms: snapshots,
+            generatedAt: Date()
+        )
     }
 
     private func loadFromFileFallback() -> RoomStoreState? {
