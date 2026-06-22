@@ -162,6 +162,10 @@ final class RoomStore: ObservableObject {
         }
 
         rooms[roomIndex].mediaAssets.append(asset)
+        rooms[roomIndex].qualityIssues = []
+        rooms[roomIndex].qualityCanExport = false
+        rooms[roomIndex].qualityLastCheckedAt = nil
+
         let actorName = rooms[roomIndex].participants.first(where: { $0.role == .owner })?.displayName
             ?? rooms[roomIndex].participants.first?.displayName
             ?? "system"
@@ -187,6 +191,72 @@ final class RoomStore: ObservableObject {
             )
         }
         lastError = nil
+        persist()
+        return true
+    }
+
+    func runQualityChecks(for roomID: UUID) -> Bool {
+        guard let roomIndex = rooms.firstIndex(where: { $0.id == roomID }) else {
+            lastError = "Room not found."
+            return false
+        }
+
+        let issues = evaluateQuality(for: rooms[roomIndex])
+        rooms[roomIndex].qualityIssues = issues
+        rooms[roomIndex].qualityLastCheckedAt = Date()
+        rooms[roomIndex].qualityCanExport = issues.allSatisfy { $0.severity != .hardStop }
+        rooms[roomIndex].updatedAt = Date()
+
+        if issues.isEmpty {
+            rooms[roomIndex].status = .readyToExport
+            rooms[roomIndex].nextActionHint = "Quality checks passed. Export when ready."
+        } else if rooms[roomIndex].qualityCanExport {
+            rooms[roomIndex].status = .readyToExport
+            rooms[roomIndex].nextActionHint = "Warnings only. You can export, but review the risks."
+        } else {
+            rooms[roomIndex].status = .blocked
+            rooms[roomIndex].nextActionHint = "Quality hard-stop detected. Resolve checks before export."
+        }
+
+        let blockerCount = issues.filter { $0.severity == .hardStop }.count
+        let warningCount = issues.filter { $0.severity == .warning }.count
+        if let actor = rooms[roomIndex].participants.first(where: { $0.role == .owner })?.displayName
+            ?? rooms[roomIndex].participants.first?.displayName {
+            rooms[roomIndex].comments.append(
+                KoraRoomComment(
+                    text: "Quality check complete: \(blockerCount) hard-stop, \(warningCount) warning.",
+                    authorName: actor
+                )
+            )
+        }
+        persist()
+        return rooms[roomIndex].qualityCanExport
+    }
+
+    func attemptExport(roomID: UUID) -> Bool {
+        guard let roomIndex = rooms.firstIndex(where: { $0.id == roomID }) else {
+            lastError = "Room not found."
+            return false
+        }
+
+        let canExport = runQualityChecks(for: rooms[roomIndex].id)
+        guard canExport else {
+            lastError = "Export blocked by quality hard-stops."
+            return false
+        }
+
+        rooms[roomIndex].status = .exported
+        rooms[roomIndex].nextActionHint = "Export completed. Start a new review session or export variant."
+        let actor = rooms[roomIndex].participants.first(where: { $0.role == .owner })?.displayName
+            ?? rooms[roomIndex].participants.first?.displayName
+            ?? "system"
+        rooms[roomIndex].comments.append(
+            KoraRoomComment(
+                text: "Export completed by \(actor).",
+                authorName: actor
+            )
+        )
+        rooms[roomIndex].updatedAt = Date()
         persist()
         return true
     }
@@ -266,6 +336,7 @@ final class RoomStore: ObservableObject {
 
         let sampleRate = trackAudioSampleRate(track)
         let channels = trackChannelCount(track)
+        let qualitySignal = analyzeQualitySignal(from: fileURL)
 
         let codec = resolvedAudioCodec(from: track.formatDescriptions)
         let durationSeconds = Int(CMTimeGetSeconds(asset.duration).rounded())
@@ -288,7 +359,11 @@ final class RoomStore: ObservableObject {
             sampleRate: sampleRate,
             channels: channels,
             fileSizeBytes: fileSize,
-            durationSeconds: durationSeconds
+            durationSeconds: durationSeconds,
+            peakDb: qualitySignal?.peakDb,
+            loudnessDb: qualitySignal?.loudnessDb,
+            hasClipping: qualitySignal?.hasClipping,
+            sourceURL: fileURL.absoluteString
         )
     }
 
@@ -337,6 +412,237 @@ final class RoomStore: ObservableObject {
             UInt8(value & 0xFF)
         ]
         return String(decoding: bytes, as: UTF8.self)
+    }
+
+    private func evaluateQuality(for room: KoraRoom) -> [KoraQualityIssue] {
+        guard room.status != .collecting else {
+            return [
+                KoraQualityIssue(
+                    severity: .hardStop,
+                    code: "no_asset",
+                    title: "No media imported",
+                    message: "Import at least one audio file before export."
+                )
+            ]
+        }
+
+        if room.mediaAssets.isEmpty {
+            return [
+                KoraQualityIssue(
+                    severity: .hardStop,
+                    code: "no_asset",
+                    title: "No media imported",
+                    message: "Import at least one audio file before export."
+                )
+            ]
+        }
+
+        var issues: [KoraQualityIssue] = []
+        for asset in room.mediaAssets {
+            if asset.durationSeconds == nil || asset.durationSeconds! <= 0 {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .hardStop,
+                        code: "duration",
+                        title: "Invalid duration",
+                        message: "\(asset.fileName) has invalid or unavailable duration."
+                    )
+                )
+            }
+
+            if asset.supportTier == .fallback {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .hardStop,
+                        code: "fallback",
+                        title: "Fallback codec",
+                        message: "\(asset.fileName) requires fallback/transcode path not yet enabled."
+                    )
+                )
+            }
+
+            if let sampleRate = asset.sampleRate, sampleRate < 22050 {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .hardStop,
+                        code: "sample_rate_low",
+                        title: "Low sample rate",
+                        message: "\(asset.fileName) is below 22.05kHz and may export poorly."
+                    )
+                )
+            } else if asset.sampleRate == nil {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "sample_rate_missing",
+                        title: "Sample rate missing",
+                        message: "\(asset.fileName) metadata missing sample rate."
+                    )
+                )
+            }
+
+            if let loudnessDb = asset.loudnessDb, loudnessDb < -32 {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "low_loudness",
+                        title: "Low loudness",
+                        message: "\(asset.fileName) is significantly quieter than typical session targets."
+                    )
+                )
+            } else if asset.loudnessDb == nil {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "loudness_missing",
+                        title: "Loudness estimate unavailable",
+                        message: "Unable to estimate \(asset.fileName) loudness."
+                    )
+                )
+            }
+
+            if let hasClipping = asset.hasClipping, hasClipping {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "clipping",
+                        title: "Possible clipping",
+                        message: "\(asset.fileName) may clip. Consider gain control before export."
+                    )
+                )
+            }
+
+            if let peakDb = asset.peakDb, peakDb > -0.1 {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "peak",
+                        title: "High peak",
+                        message: "\(asset.fileName) peak is \(String(format: "%.1f", peakDb)) dB and may distort."
+                    )
+                )
+            }
+        }
+
+        let supportedSampleRates = Set(room.mediaAssets.compactMap(\.sampleRate))
+        if supportedSampleRates.count > 1 {
+            issues.append(
+                KoraQualityIssue(
+                    severity: .warning,
+                    code: "sample_rate_mismatch",
+                    title: "Sample-rate mismatch",
+                    message: "Session contains mixed sample rates. Normalize for consistent rendering."
+                )
+            )
+        }
+
+        let channelCounts = Set(room.mediaAssets.compactMap(\.channels))
+        if channelCounts.count > 1 {
+            issues.append(
+                KoraQualityIssue(
+                    severity: .warning,
+                    code: "channel_mismatch",
+                    title: "Channel mismatch",
+                    message: "Assets have mixed channel layouts; export result may be inconsistent."
+                )
+            )
+        } else if let channels = channelCounts.first, channels > 2 {
+            issues.append(
+                KoraQualityIssue(
+                    severity: .warning,
+                    code: "multichannel",
+                    title: "Multichannel source",
+                    message: "Source has \(channels) channels. Verify your render target supports this."
+                )
+            )
+        }
+
+        let loudnessRange = room.mediaAssets.compactMap(\.loudnessDb)
+        if loudnessRange.count > 1 {
+            let maxL = loudnessRange.max() ?? 0
+            let minL = loudnessRange.min() ?? 0
+            if maxL - minL > 5 {
+                issues.append(
+                    KoraQualityIssue(
+                        severity: .warning,
+                        code: "loudness_mismatch",
+                        title: "Loudness consistency warning",
+                        message: "Loudness varies by more than 5 dB across assets."
+                    )
+                )
+            }
+        }
+
+        return issues
+    }
+
+    private func analyzeQualitySignal(
+        from fileURL: URL
+    ) -> (peakDb: Double, loudnessDb: Double, hasClipping: Bool)? {
+        let asset = AVURLAsset(url: fileURL)
+        guard let track = asset.tracks(withMediaType: .audio).first else {
+            return nil
+        }
+
+        guard let reader = try? AVAssetReader(asset: asset) else { return nil }
+        let output = AVAssetReaderTrackOutput(
+            track: track,
+            outputSettings: [
+                AVFormatIDKey: Int(kAudioFormatLinearPCM),
+                AVLinearPCMBitDepthKey: 32,
+                AVLinearPCMIsFloatKey: true,
+                AVLinearPCMIsNonInterleaved: false,
+                AVLinearPCMIsBigEndianKey: false,
+                AVLinearPCMIsPackedKey: true
+            ]
+        )
+        reader.add(output)
+        reader.startReading()
+
+        var maxAbs: Float = 0
+        var sumSquares: Double = 0
+        var totalSamples = 0
+        let sampleLimit = 1_048_576
+
+        while let sampleBuffer = output.copyNextSampleBuffer(), reader.status == .reading {
+            guard let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else { continue }
+            var lengthAtOffset = 0
+            var rawData: UnsafeMutablePointer<Int8>?
+            let status = CMBlockBufferGetDataPointer(
+                blockBuffer,
+                atOffset: 0,
+                lengthAtOffsetOut: &lengthAtOffset,
+                totalLengthOut: nil,
+                dataPointerOut: &rawData
+            )
+            if status != kCMBlockBufferNoErr || rawData == nil { continue }
+
+            let sampleCount = lengthAtOffset / 4
+            for sampleOffset in 0..<sampleCount {
+                let value = rawData!.advanced(by: sampleOffset * 4).assumingMemoryBound(to: Float.self).pointee
+                let absValue = abs(value)
+                maxAbs = max(maxAbs, absValue)
+                sumSquares += Double(absValue * absValue)
+                totalSamples += 1
+                if totalSamples >= sampleLimit {
+                    break
+                }
+            }
+
+            CMSampleBufferInvalidate(sampleBuffer)
+            if totalSamples >= sampleLimit { break }
+        }
+
+        if totalSamples == 0 {
+            return nil
+        }
+
+        let meanSquare = sumSquares / Double(max(totalSamples, 1))
+        let rms = sqrt(meanSquare)
+        let peakDb = 20 * log10(Double(max(maxAbs, 0.0000001)))
+        let loudnessDb = 20 * log10(max(rms, 0.0000000001))
+        let hasClipping = maxAbs >= 0.985
+        return (peakDb, loudnessDb, hasClipping)
     }
 
     private func generateInviteCode() -> String {

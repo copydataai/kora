@@ -100,6 +100,28 @@ enum KoraFormatSupportTier: String, Codable {
     }
 }
 
+enum KoraQualitySeverity: String, Codable {
+    case hardStop
+    case warning
+
+    var title: String {
+        switch self {
+        case .hardStop:
+            "Hard stop"
+        case .warning:
+            "Warning"
+        }
+    }
+}
+
+struct KoraQualityIssue: Identifiable, Codable, Hashable {
+    var id = UUID()
+    var severity: KoraQualitySeverity
+    var code: String
+    var title: String
+    var message: String
+}
+
 struct KoraRoomAsset: Identifiable, Codable, Hashable {
     var id = UUID()
     var fileName: String
@@ -110,6 +132,10 @@ struct KoraRoomAsset: Identifiable, Codable, Hashable {
     var channels: Int?
     var fileSizeBytes: Int64?
     var durationSeconds: Int?
+    var peakDb: Double?
+    var loudnessDb: Double?
+    var hasClipping: Bool?
+    var sourceURL: String?
     var addedAt = Date()
 }
 
@@ -160,4 +186,7 @@ struct KoraRoom: Identifiable, Codable, Hashable {
     var participants: [KoraParticipant] = []
     var mediaAssets: [KoraRoomAsset] = []
     var comments: [KoraRoomComment] = []
+    var qualityIssues: [KoraQualityIssue] = []
+    var qualityLastCheckedAt: Date?
+    var qualityCanExport: Bool = false
 }
