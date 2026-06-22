@@ -104,6 +104,8 @@ MVP is useful; v1.0 is what we actively recommend as the product baseline.
 - `mvp-ui` is also implemented in cycle for room-level quality readability:
   - quality banner and warning summary,
   - explicit export readiness before action.
+- `v1.0` planning started:
+  - room widget payload persistence for pending status handoff (`Kora/widget-state.json`), used by future widget targets.
 
 ## Post-MVP roadmap (non-restrictive growth)
 

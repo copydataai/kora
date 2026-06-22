@@ -77,6 +77,9 @@ A practical but minimal starting point:
 - quality banner and blocker/warning summaries,
 - explicit export readiness path and in-room export action.
 
+`v1.0` scaffolding has started:
+- room widget handoff payload is persisted for future macOS widgets (`widget-state.json`).
+
 ## Install path
 
 ### For users

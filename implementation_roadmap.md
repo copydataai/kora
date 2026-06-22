@@ -73,7 +73,9 @@ Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
   - [x] quality status banner and export gate state visibility in room detail.
   - [x] explicit hard-stop warning and warning-only paths before export.
 
-Current run focus: `v1.0` recommended baseline (widget/packaging and templates remain).
+Current run focus: `v1.0` recommended baseline.
+- Widget scaffolding is now in place (`widget-state.json` is persisted with room quality summaries).
+- Next milestones remain: signed packaging pipeline and actual widget extension.
 
 ## Phase 1 — v0.9 MVP
 
