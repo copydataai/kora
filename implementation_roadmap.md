@@ -43,6 +43,17 @@ The loop is now runnable:
 
 Current loop state is stored locally and persisted to user storage so progress is preserved across launches.
 
+### Loop run #1 (2026-06-22)
+
+- [x] Execute `Plan Stabilization` phase milestones:
+  - [x] Finalize phase docs.
+  - [x] Define scope-contract for v0.9/v1.0.
+  - [x] Add measurable KPI table placeholders for baseline milestones.
+- [x] Wire implementation engine into app (`ContentView` and `PhaseExecutionStore`).
+- [ ] Start v0.9 execution milestones.
+
+Next loop (run #2) starts by opening the v0.9 list and completing `mvp-room`.
+
 ## Phase 1 — v0.9 MVP
 
 Goal: ship practical end-to-end multiplayer audio loop.
