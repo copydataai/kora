@@ -12,7 +12,7 @@ struct koraApp: App {
                 .environmentObject(player)
                 .task {
                     library.restore()
-                    player.onTrackChange = { _, _ in }
+                    player.onTrackChange = { track, playing in NowPlayingState.write(track: track, isPlaying: playing) }
                 }
         }
     }
