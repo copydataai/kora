@@ -36,6 +36,21 @@
                BuildableProductType = "com.apple.product-type.bundle.unit-test">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "13D589672FE9206800422F48"
+               BuildableName = "koraUITests.xctest"
+               BlueprintName = "koraUITests"
+               ReferencedContainer = "container:kora.xcodeproj"
+               BuildableProductType = "com.apple.product-type.bundle.ui-testing">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -54,6 +69,17 @@
                BlueprintName = "koraTests"
                ReferencedContainer = "container:kora.xcodeproj"
                BuildableProductType = "com.apple.product-type.bundle.unit-test">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "13D589672FE9206800422F48"
+               BuildableName = "koraUITests.xctest"
+               BlueprintName = "koraUITests"
+               ReferencedContainer = "container:kora.xcodeproj"
+               BuildableProductType = "com.apple.product-type.bundle.ui-testing">
             </BuildableReference>
          </TestableReference>
       </Testables>
