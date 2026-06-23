@@ -1,2 +1,21 @@
+.DS_Store
+
+# Codex/local agent state
 .agents/
 .superpowers/
+
+# Xcode local state
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+Build/
+*.xcarchive
+*.dSYM
+
+# SwiftPM/Xcode generated files
+.build/
+Package.resolved
+
+# Logs
+*.log
