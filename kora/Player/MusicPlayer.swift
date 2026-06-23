@@ -163,8 +163,7 @@ final class MusicPlayer: ObservableObject {
         progressTimer = nil
     }
 
-    // ponytail: timer + near-end heuristic for finish detection; upgrade path is
-    // AVAudioPlayerDelegate.audioPlayerDidFinishPlaying if precise/gapless detection is ever needed.
+    // Timer-based finish detection keeps playback simple; use AVAudioPlayerDelegate if precision becomes necessary.
     nonisolated static func shouldAdvanceOnFinish(wasPlaying: Bool, isPlayerPlaying: Bool, currentTime: TimeInterval, duration: TimeInterval) -> Bool {
         guard wasPlaying, !isPlayerPlaying, duration > 0 else { return false }
         return currentTime >= duration - 0.25

@@ -6,7 +6,25 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		13C1D4322FEA09F9005E8C9B /* koraWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 13D589992FE9206F00422F48 /* koraWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		13C1D4332FEA09F9005E8C9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 13D589472FE9206600422F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13D5899F2FE9206F00422F48;
+			remoteInfo = koraWidget;
+		};
+		13C1D4362FEA0A0E005E8C9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 13D589472FE9206600422F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13D5899F2FE9206F00422F48;
+			remoteInfo = koraWidget;
+		};
 		13D5895F2FE9206800422F48 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 13D589472FE9206600422F48 /* Project object */;
@@ -22,6 +40,20 @@
 			remoteInfo = kora;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		13C1D4352FEA09F9005E8C9B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				13C1D4322FEA09F9005E8C9B /* koraWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		13D5894F2FE9206700422F48 /* kora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kora.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -49,6 +81,11 @@
 		13D5899A2FE9206F00422F48 /* koraWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = koraWidget;
+			sourceTree = "<group>";
+		};
+		13E3A0002FEA100000000001 /* KoraShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KoraShared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -85,13 +122,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		13C1D4312FEA09F9005E8C9B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		13D589462FE9206600422F48 = {
 			isa = PBXGroup;
 			children = (
 				13D589512FE9206700422F48 /* kora */,
+				13E3A0002FEA100000000001 /* KoraShared */,
 				13D5899A2FE9206F00422F48 /* koraWidget */,
 				13D589612FE9206800422F48 /* koraTests */,
 				13D5896B2FE9206800422F48 /* koraUITests */,
+				13C1D4312FEA09F9005E8C9B /* Frameworks */,
 				13D589502FE9206700422F48 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -117,13 +163,17 @@
 				13D5894B2FE9206700422F48 /* Sources */,
 				13D5894C2FE9206700422F48 /* Frameworks */,
 				13D5894D2FE9206700422F48 /* Resources */,
+				13C1D4352FEA09F9005E8C9B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				13C1D4342FEA09F9005E8C9B /* PBXTargetDependency */,
+				13C1D4372FEA0A0E005E8C9B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				13D589512FE9206700422F48 /* kora */,
+				13E3A0002FEA100000000001 /* KoraShared */,
 			);
 			name = kora;
 			packageProductDependencies = (
@@ -192,6 +242,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				13D5899A2FE9206F00422F48 /* koraWidget */,
+				13E3A0002FEA100000000001 /* KoraShared */,
 			);
 			name = koraWidget;
 			packageProductDependencies = (
@@ -311,6 +362,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		13C1D4342FEA09F9005E8C9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 13D5899F2FE9206F00422F48 /* koraWidget */;
+			targetProxy = 13C1D4332FEA09F9005E8C9B /* PBXContainerItemProxy */;
+		};
+		13C1D4372FEA0A0E005E8C9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 13D5899F2FE9206F00422F48 /* koraWidget */;
+			targetProxy = 13C1D4362FEA0A0E005E8C9B /* PBXContainerItemProxy */;
+		};
 		13D589602FE9206800422F48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 13D5894E2FE9206700422F48 /* kora */;
@@ -444,8 +505,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = kora/kora.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SA5CY34ZL;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -471,13 +534,13 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				SWIFT_VERSION = 6.0;
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
@@ -488,8 +551,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = kora/kora.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SA5CY34ZL;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -515,13 +580,13 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				SWIFT_VERSION = 6.0;
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
@@ -628,8 +693,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = koraWidget/koraWidget.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SA5CY34ZL;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = com.apple.widgetkit;
 				INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
@@ -641,7 +708,7 @@
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = macosx;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -650,8 +717,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = koraWidget/koraWidget.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SA5CY34ZL;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = com.apple.widgetkit;
 				INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass = "$(PRODUCT_MODULE_NAME).KoraWidgetBundle";
@@ -663,7 +732,7 @@
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = macosx;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

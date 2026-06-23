@@ -27,7 +27,6 @@ struct ContentView: View {
                     if isDir.boolValue {
                         library.addFolder(url: url)
                     } else if MusicLibrary.audioExtensions.contains(url.pathExtension.lowercased()) {
-                        // ponytail: dropped loose file plays as a one-off; not added to the library, so the synthetic folderID is never used for lookup.
                         let t = Track(url: url, folderID: UUID())
                         player.play(track: t, in: [t])
                     }
