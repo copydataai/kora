@@ -30,7 +30,7 @@ struct LibraryScanTests {
         #expect(files.count == 2)
     }
 
-    @Test func trackTitleDefaultsToFilename() {
+    @Test @MainActor func trackTitleDefaultsToFilename() {
         let t = Track(url: URL(fileURLWithPath: "/m/Song Name.m4a"), folderID: UUID())
         #expect(t.title == "Song Name")
         #expect(t.artist == nil)
