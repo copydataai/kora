@@ -15,5 +15,47 @@ struct koraApp: App {
                     player.onTrackChange = { track, playing in NowPlayingState.write(track: track, isPlaying: playing) }
                 }
         }
+        .commands {
+            CommandMenu("Playback") {
+                Button(player.isPlaying ? "Pause" : "Play") { player.playPause() }
+                Button("Next") { player.next() }
+                    .keyboardShortcut(.rightArrow, modifiers: .command)
+                Button("Previous") { player.previous() }
+                    .keyboardShortcut(.leftArrow, modifiers: .command)
+            }
+        }
+
+        MenuBarExtra("Kora", systemImage: "music.note") {
+            VStack(alignment: .leading, spacing: 10) {
+                if player.hasTrack {
+                    HStack(spacing: 10) {
+                        if let data = player.artwork, let image = NSImage(data: data) {
+                            Image(nsImage: image).resizable().frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        VStack(alignment: .leading) {
+                            Text(player.currentTrackName).font(.headline).lineLimit(1)
+                            if let artist = player.artist, !artist.isEmpty {
+                                Text(artist).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                            }
+                        }
+                    }
+                } else {
+                    Text("Nothing playing").foregroundStyle(.secondary)
+                }
+                HStack(spacing: 20) {
+                    Button { player.previous() } label: { Image(systemName: "backward.fill") }
+                    Button { player.playPause() } label: {
+                        Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                    }
+                    Button { player.next() } label: { Image(systemName: "forward.fill") }
+                }
+                .buttonStyle(.plain)
+                .disabled(!player.hasTrack)
+            }
+            .padding(12)
+            .frame(width: 260)
+        }
+        .menuBarExtraStyle(.window)
     }
 }
