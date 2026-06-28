@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @EnvironmentObject var library: MusicLibrary
     @EnvironmentObject var player: MusicPlayer
+    @State private var showQueue = false
 
     var body: some View {
         NavigationSplitView {
@@ -11,7 +12,18 @@ struct ContentView: View {
         } detail: {
             NowPlayingView()
         }
-        .frame(minWidth: 760, minHeight: 520)
+        .frame(minWidth: 820, minHeight: 560)
+        .inspector(isPresented: $showQueue) { QueueView() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { library.rescanAll() } label: { Image(systemName: "arrow.clockwise") }
+                    .help("Rescan all folders")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button { showQueue.toggle() } label: { Image(systemName: "list.bullet") }
+                    .help("Up Next")
+            }
+        }
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             handleDrop(providers); return true
         }
