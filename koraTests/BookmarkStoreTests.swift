@@ -16,4 +16,24 @@ struct BookmarkStoreTests {
     @Test func decodeOfGarbageReturnsEmpty() {
         #expect(MusicLibrary.decodeBookmarks(Data([0xFF, 0x00])) == [])
     }
+
+    @Test func persistedFoldersRoundTrip() {
+        let folders = [
+            MusicLibrary.PersistedFolder(bookmark: Data([1, 2, 3]), displayName: "Jazz"),
+            MusicLibrary.PersistedFolder(bookmark: Data([4, 5]), displayName: nil),
+        ]
+        let decoded = MusicLibrary.decodePersisted(MusicLibrary.encodePersisted(folders))
+        #expect(decoded == folders)
+    }
+
+    @Test func decodePersistedGarbageReturnsEmpty() {
+        #expect(MusicLibrary.decodePersisted(Data([0xFF, 0x00])) == [])
+    }
+
+    @Test func migrateLegacyBookmarksKeepsOrderAndDropsNames() {
+        let legacy = [Data([1]), Data([2]), Data([3])]
+        let migrated = MusicLibrary.migrate(legacy: legacy)
+        #expect(migrated.map(\.bookmark) == legacy)
+        #expect(migrated.allSatisfy { $0.displayName == nil })
+    }
 }

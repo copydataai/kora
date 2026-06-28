@@ -5,16 +5,24 @@ import Combine
 final class MusicLibrary: ObservableObject {
     struct Folder: Identifiable, Hashable {
         let id: UUID
-        let url: URL
+        var url: URL?
         let bookmark: Data
-        var name: String { url.lastPathComponent }
+        var displayName: String?
+        var isAvailable: Bool
         var tracks: [Track]
+        var name: String { displayName ?? url?.lastPathComponent ?? "Unavailable folder" }
+    }
+
+    nonisolated struct PersistedFolder: Codable, Equatable {
+        var bookmark: Data
+        var displayName: String?
     }
 
     @Published private(set) var folders: [Folder] = []
 
     private let defaults: UserDefaults
-    private let bookmarksKey = "library.folderBookmarks"
+    private let bookmarksKey = "library.folderBookmarks"   // legacy [Data] blob, read for migration
+    private let foldersKey = "library.folders.v2"
     private var accessedURLs: [URL] = []
 
     init(defaults: UserDefaults = .standard) {
@@ -37,53 +45,80 @@ final class MusicLibrary: ObservableObject {
         return array ?? []
     }
 
+    nonisolated static func encodePersisted(_ folders: [PersistedFolder]) -> Data {
+        (try? JSONEncoder().encode(folders)) ?? Data()
+    }
+
+    nonisolated static func decodePersisted(_ data: Data) -> [PersistedFolder] {
+        (try? JSONDecoder().decode([PersistedFolder].self, from: data)) ?? []
+    }
+
+    nonisolated static func migrate(legacy bookmarks: [Data]) -> [PersistedFolder] {
+        bookmarks.map { PersistedFolder(bookmark: $0, displayName: nil) }
+    }
+
     // MARK: Public API
 
     func addFolder(url: URL) {
         guard let bookmark = try? url.bookmarkData(
             options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil
         ) else { return }
-        var saved = currentBookmarks()
-        saved.append(bookmark)
-        persist(saved)
-        ingest(url: url, bookmark: bookmark)
+        ingest(url: url, bookmark: bookmark, displayName: nil)
+        persistCurrent()
     }
 
     func forget(_ folder: Folder) {
-        folder.url.stopAccessingSecurityScopedResource()
-        accessedURLs.removeAll { $0 == folder.url }
+        folder.url?.stopAccessingSecurityScopedResource()
+        if let url = folder.url { accessedURLs.removeAll { $0 == url } }
         folders.removeAll { $0.id == folder.id }
-        persist(folders.map(\.bookmark))
+        persistCurrent()
     }
 
     func restore() {
-        for bookmark in currentBookmarks() {
+        for entry in loadPersisted() {
             var stale = false
-            guard let url = try? URL(
-                resolvingBookmarkData: bookmark, options: .withSecurityScope,
+            let url = try? URL(
+                resolvingBookmarkData: entry.bookmark, options: .withSecurityScope,
                 relativeTo: nil, bookmarkDataIsStale: &stale
-            ), !stale else { continue }   // drop stale silently
-            ingest(url: url, bookmark: bookmark)
+            )
+            if let url, !stale {
+                ingest(url: url, bookmark: entry.bookmark, displayName: entry.displayName)
+            } else {
+                // Keep a placeholder instead of vanishing — re-link comes in a later task.
+                folders.append(Folder(id: UUID(), url: nil, bookmark: entry.bookmark,
+                                      displayName: entry.displayName, isAvailable: false, tracks: []))
+            }
         }
     }
 
     // MARK: Internal
 
-    private func ingest(url: URL, bookmark: Data) {
+    private func ingest(url: URL, bookmark: Data, displayName: String?) {
         let accessed = url.startAccessingSecurityScopedResource()
         if accessed { accessedURLs.append(url) }
         let folderID = UUID()
         let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folderID) }
-        folders.append(Folder(id: folderID, url: url, bookmark: bookmark, tracks: tracks))
+        folders.append(Folder(id: folderID, url: url, bookmark: bookmark,
+                              displayName: displayName, isAvailable: true, tracks: tracks))
     }
 
-    private func currentBookmarks() -> [Data] {
-        guard let data = defaults.data(forKey: bookmarksKey) else { return [] }
-        return MusicLibrary.decodeBookmarks(data)
+    private func loadPersisted() -> [PersistedFolder] {
+        if let data = defaults.data(forKey: foldersKey) {
+            return MusicLibrary.decodePersisted(data)
+        }
+        // One-time migration from the legacy [Data] bookmark blob.
+        guard let legacyData = defaults.data(forKey: bookmarksKey) else { return [] }
+        let migrated = MusicLibrary.migrate(legacy: MusicLibrary.decodeBookmarks(legacyData))
+        persistFolders(migrated)
+        return migrated
     }
 
-    private func persist(_ bookmarks: [Data]) {
-        defaults.set(MusicLibrary.encodeBookmarks(bookmarks), forKey: bookmarksKey)
+    private func persistFolders(_ entries: [PersistedFolder]) {
+        defaults.set(MusicLibrary.encodePersisted(entries), forKey: foldersKey)
+    }
+
+    private func persistCurrent() {
+        persistFolders(folders.map { PersistedFolder(bookmark: $0.bookmark, displayName: $0.displayName) })
     }
 }
 
