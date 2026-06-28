@@ -27,4 +27,10 @@ struct ArtworkThemeTests {
         let theme = await ArtworkPalette.theme(for: nil)
         #expect(theme == ArtworkTheme.neutral)
     }
+
+    @Test @MainActor func freshPlayerHasNeutralThemeAndNoCurrentTrack() {
+        let player = MusicPlayer()
+        #expect(player.theme == ArtworkTheme.neutral)
+        #expect(player.currentTrackID == nil)
+    }
 }

@@ -11,6 +11,8 @@ final class MusicPlayer: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var artist: String?
     @Published private(set) var artwork: Data?
+    @Published private(set) var theme: ArtworkTheme = .neutral
+    @Published private(set) var currentTrackID: UUID?
     @Published var volume: Double {
         didSet {
             player?.volume = Float(volume)
@@ -127,6 +129,7 @@ final class MusicPlayer: ObservableObject {
 
     private func loadAndPlayCurrent() {
         guard let track = queue.current else { return }
+        currentTrackID = track.id
         load(url: track.url)              // existing method sets player/duration/etc.
         player?.volume = Float(volume)
         currentTrackName = track.title
@@ -146,6 +149,7 @@ final class MusicPlayer: ObservableObject {
         currentTrackName = meta.title
         artist = meta.artist
         artwork = art
+        theme = await ArtworkPalette.theme(for: art)
         onTrackChange?(queue.current, isPlaying)
     }
 
