@@ -13,6 +13,8 @@ final class MusicPlayer: ObservableObject {
     @Published private(set) var artwork: Data?
     @Published private(set) var theme: ArtworkTheme = .neutral
     @Published private(set) var currentTrackID: UUID?
+    @Published private(set) var queueTracks: [Track] = []
+    @Published private(set) var queueIndex: Int = 0
     @Published var volume: Double {
         didSet {
             player?.volume = Float(volume)
@@ -127,9 +129,25 @@ final class MusicPlayer: ObservableObject {
         loadAndPlayCurrent()
     }
 
+    func jumpInQueue(to index: Int) {
+        queue.jump(to: index)
+        loadAndPlayCurrent()   // updates the published queue via syncQueue()
+    }
+
+    func moveInQueue(fromOffsets source: IndexSet, toOffset destination: Int) {
+        queue.move(fromOffsets: source, toOffset: destination)
+        syncQueue()
+    }
+
+    private func syncQueue() {
+        queueTracks = queue.tracks
+        queueIndex = queue.index
+        currentTrackID = queue.current?.id
+    }
+
     private func loadAndPlayCurrent() {
         guard let track = queue.current else { return }
-        currentTrackID = track.id
+        syncQueue()
         load(url: track.url)              // existing method sets player/duration/etc.
         player?.volume = Float(volume)
         currentTrackName = track.title
