@@ -6,8 +6,11 @@ no library import, no accounts, no clutter.
 ## Features
 
 - Register music **folders**; Kora scans them (including subfolders) into a sidebar library.
-- Now-playing view with album artwork, title/artist, seek, and volume.
-- Play/pause, previous/next, and auto-advance through a folder.
+- **Adaptive now-playing** that takes on the current album art's color — blurred-art backdrop, art-derived accent, cross-fading as tracks change.
+- **Up Next** queue inspector: see what's coming, click a track to jump, drag to reorder.
+- **Folder management**: rescan for on-disk changes, rename and reorder, reveal in Finder, and re-link folders that moved.
+- Play/pause, previous/next, seek, volume, and auto-advance through a folder.
+- A **menu-bar mini-player** plus Playback menu commands (⌘← / ⌘→ to skip).
 - Drag a folder onto the window to add it; drag an audio file to play it.
 - A macOS **now-playing widget**.
 
