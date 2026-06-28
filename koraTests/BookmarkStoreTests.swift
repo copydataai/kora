@@ -37,10 +37,10 @@ struct BookmarkStoreTests {
         #expect(migrated.allSatisfy { $0.displayName == nil })
     }
 
-    @Test func availabilityRequiresResolvableNonStaleURL() {
-        let url = URL(fileURLWithPath: "/tmp/x")
-        #expect(MusicLibrary.isAvailable(resolvedURL: url, isStale: false))
-        #expect(!MusicLibrary.isAvailable(resolvedURL: url, isStale: true))   // stale → unavailable
-        #expect(!MusicLibrary.isAvailable(resolvedURL: nil, isStale: false))  // unresolvable → unavailable
+    @Test func availabilityRequiresResolvableURL() {
+        // A resolvable URL is available even if the bookmark was stale — staleness
+        // triggers a bookmark refresh on restore, not a disappearing folder.
+        #expect(MusicLibrary.isAvailable(resolvedURL: URL(fileURLWithPath: "/tmp/x")))
+        #expect(!MusicLibrary.isAvailable(resolvedURL: nil))   // only unresolvable → unavailable
     }
 }

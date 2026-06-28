@@ -58,8 +58,10 @@ final class MusicLibrary: ObservableObject {
         bookmarks.map { PersistedFolder(bookmark: $0, displayName: nil) }
     }
 
-    nonisolated static func isAvailable(resolvedURL: URL?, isStale: Bool) -> Bool {
-        resolvedURL != nil && !isStale
+    /// A folder is available whenever its bookmark resolves to a URL. Staleness does
+    /// not make it unavailable — a stale-but-resolvable bookmark is refreshed on restore.
+    nonisolated static func isAvailable(resolvedURL: URL?) -> Bool {
+        resolvedURL != nil
     }
 
     // MARK: Public API
@@ -80,20 +82,24 @@ final class MusicLibrary: ObservableObject {
     }
 
     func restore() {
+        var refreshedAny = false
         for entry in loadPersisted() {
             var stale = false
             let url = try? URL(
                 resolvingBookmarkData: entry.bookmark, options: .withSecurityScope,
                 relativeTo: nil, bookmarkDataIsStale: &stale
             )
-            if MusicLibrary.isAvailable(resolvedURL: url, isStale: stale), let url {
-                ingest(url: url, bookmark: entry.bookmark, displayName: entry.displayName)
+            if MusicLibrary.isAvailable(resolvedURL: url), let url {
+                let refreshed = ingest(url: url, bookmark: entry.bookmark,
+                                       displayName: entry.displayName, refreshIfStale: stale)
+                refreshedAny = refreshedAny || refreshed
             } else {
-                // Keep a placeholder instead of vanishing — re-link comes in a later task.
+                // Truly unresolvable — keep a placeholder to re-link rather than vanish.
                 folders.append(Folder(id: UUID(), url: nil, bookmark: entry.bookmark,
                                       displayName: entry.displayName, isAvailable: false, tracks: []))
             }
         }
+        if refreshedAny { persistCurrent() }   // persist any regenerated bookmarks
     }
 
     func rescan(_ folder: Folder) {
@@ -136,13 +142,24 @@ final class MusicLibrary: ObservableObject {
 
     // MARK: Internal
 
-    private func ingest(url: URL, bookmark: Data, displayName: String?) {
+    @discardableResult
+    private func ingest(url: URL, bookmark: Data, displayName: String?, refreshIfStale: Bool = false) -> Bool {
         let accessed = url.startAccessingSecurityScopedResource()
         if accessed { accessedURLs.append(url) }
+        // A stale-but-resolvable bookmark is still usable; recreate it from the live URL
+        // (Apple's documented fix) instead of forcing a manual re-link.
+        var resolvedBookmark = bookmark
+        var refreshed = false
+        if refreshIfStale, let fresh = try? url.bookmarkData(
+            options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+            resolvedBookmark = fresh
+            refreshed = true
+        }
         let folderID = UUID()
         let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folderID) }
-        folders.append(Folder(id: folderID, url: url, bookmark: bookmark,
+        folders.append(Folder(id: folderID, url: url, bookmark: resolvedBookmark,
                               displayName: displayName, isAvailable: true, tracks: tracks))
+        return refreshed
     }
 
     private func loadPersisted() -> [PersistedFolder] {
