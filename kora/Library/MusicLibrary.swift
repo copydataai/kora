@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI   // for Array.move(fromOffsets:toOffset:)
 
 @MainActor
 final class MusicLibrary: ObservableObject {
@@ -118,6 +119,18 @@ final class MusicLibrary: ObservableObject {
             folders[i] = Folder(id: folder.id, url: newURL, bookmark: bookmark,
                                 displayName: folder.displayName, isAvailable: true, tracks: tracks)
         }
+        persistCurrent()
+    }
+
+    func rename(_ folder: Folder, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let i = folders.firstIndex(where: { $0.id == folder.id }) else { return }
+        folders[i].displayName = trimmed.isEmpty ? nil : trimmed
+        persistCurrent()
+    }
+
+    func moveFolders(fromOffsets source: IndexSet, toOffset destination: Int) {
+        folders.move(fromOffsets: source, toOffset: destination)
         persistCurrent()
     }
 
