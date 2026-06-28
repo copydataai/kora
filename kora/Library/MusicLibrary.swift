@@ -91,6 +91,18 @@ final class MusicLibrary: ObservableObject {
         }
     }
 
+    func rescan(_ folder: Folder) {
+        guard let url = folder.url else { return }
+        let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folder.id) }
+        if let i = folders.firstIndex(where: { $0.id == folder.id }) {
+            folders[i].tracks = tracks
+        }
+    }
+
+    func rescanAll() {
+        for folder in folders where folder.isAvailable { rescan(folder) }
+    }
+
     // MARK: Internal
 
     private func ingest(url: URL, bookmark: Data, displayName: String?) {

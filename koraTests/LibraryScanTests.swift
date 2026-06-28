@@ -30,6 +30,18 @@ struct LibraryScanTests {
         #expect(files.count == 2)
     }
 
+    @Test func audioFilesReflectsAddedAndRemovedFiles() {
+        let root = tempDir()
+        write("a.mp3", in: root)
+        #expect(MusicLibrary.audioFiles(in: root).count == 1)
+
+        write("b.mp3", in: root)
+        #expect(MusicLibrary.audioFiles(in: root).count == 2)   // rescan would pick this up
+
+        try? FileManager.default.removeItem(at: root.appendingPathComponent("a.mp3"))
+        #expect(MusicLibrary.audioFiles(in: root).map(\.lastPathComponent) == ["b.mp3"])
+    }
+
     @Test @MainActor func trackTitleDefaultsToFilename() {
         let t = Track(url: URL(fileURLWithPath: "/m/Song Name.m4a"), folderID: UUID())
         #expect(t.title == "Song Name")
