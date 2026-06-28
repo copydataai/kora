@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI   // for Array.move(fromOffsets:toOffset:)
 
 struct PlayQueue {
     private(set) var tracks: [Track]
@@ -26,5 +27,18 @@ struct PlayQueue {
         guard hasPrevious else { return nil }
         index -= 1
         return tracks[index]
+    }
+
+    mutating func jump(to newIndex: Int) {
+        guard !tracks.isEmpty else { return }
+        index = min(max(newIndex, 0), tracks.count - 1)
+    }
+
+    mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
+        let currentID = current?.id
+        tracks.move(fromOffsets: source, toOffset: destination)
+        if let currentID, let i = tracks.firstIndex(where: { $0.id == currentID }) {
+            index = i
+        }
     }
 }

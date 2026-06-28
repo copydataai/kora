@@ -32,4 +32,32 @@ struct PlayQueueTests {
         #expect(q.current == nil)
         #expect(q.next() == nil)
     }
+
+    @Test @MainActor func jumpClampsIntoBounds() {
+        var q = PlayQueue(tracks: [track("a"), track("b"), track("c")], startAt: 0)
+        q.jump(to: 2)
+        #expect(q.current?.title == "c")
+        q.jump(to: 99)
+        #expect(q.current?.title == "c")   // clamped to last
+        q.jump(to: -5)
+        #expect(q.current?.title == "a")   // clamped to first
+    }
+
+    @Test @MainActor func moveKeepsCurrentTrackWhenItShifts() {
+        let a = track("a"), b = track("b"), c = track("c")
+        var q = PlayQueue(tracks: [a, b, c], startAt: 0)   // current = a
+        // Move "a" from front to the end; current must still be "a".
+        q.move(fromOffsets: IndexSet(integer: 0), toOffset: 3)
+        #expect(q.tracks.map(\.title) == ["b", "c", "a"])
+        #expect(q.current?.title == "a")
+    }
+
+    @Test @MainActor func moveOtherTrackLeavesCurrentUnchanged() {
+        let a = track("a"), b = track("b"), c = track("c")
+        var q = PlayQueue(tracks: [a, b, c], startAt: 1)   // current = b
+        // Move "c" before "a"; current is still "b".
+        q.move(fromOffsets: IndexSet(integer: 2), toOffset: 0)
+        #expect(q.tracks.map(\.title) == ["c", "a", "b"])
+        #expect(q.current?.title == "b")
+    }
 }
