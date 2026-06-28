@@ -36,4 +36,11 @@ struct BookmarkStoreTests {
         #expect(migrated.map(\.bookmark) == legacy)
         #expect(migrated.allSatisfy { $0.displayName == nil })
     }
+
+    @Test func availabilityRequiresResolvableNonStaleURL() {
+        let url = URL(fileURLWithPath: "/tmp/x")
+        #expect(MusicLibrary.isAvailable(resolvedURL: url, isStale: false))
+        #expect(!MusicLibrary.isAvailable(resolvedURL: url, isStale: true))   // stale → unavailable
+        #expect(!MusicLibrary.isAvailable(resolvedURL: nil, isStale: false))  // unresolvable → unavailable
+    }
 }

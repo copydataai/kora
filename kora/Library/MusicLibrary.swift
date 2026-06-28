@@ -57,6 +57,10 @@ final class MusicLibrary: ObservableObject {
         bookmarks.map { PersistedFolder(bookmark: $0, displayName: nil) }
     }
 
+    nonisolated static func isAvailable(resolvedURL: URL?, isStale: Bool) -> Bool {
+        resolvedURL != nil && !isStale
+    }
+
     // MARK: Public API
 
     func addFolder(url: URL) {
@@ -81,7 +85,7 @@ final class MusicLibrary: ObservableObject {
                 resolvingBookmarkData: entry.bookmark, options: .withSecurityScope,
                 relativeTo: nil, bookmarkDataIsStale: &stale
             )
-            if let url, !stale {
+            if MusicLibrary.isAvailable(resolvedURL: url, isStale: stale), let url {
                 ingest(url: url, bookmark: entry.bookmark, displayName: entry.displayName)
             } else {
                 // Keep a placeholder instead of vanishing — re-link comes in a later task.
@@ -101,6 +105,20 @@ final class MusicLibrary: ObservableObject {
 
     func rescanAll() {
         for folder in folders where folder.isAvailable { rescan(folder) }
+    }
+
+    func relink(_ folder: Folder, to newURL: URL) {
+        guard let bookmark = try? newURL.bookmarkData(
+            options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil
+        ) else { return }
+        let accessed = newURL.startAccessingSecurityScopedResource()
+        if accessed { accessedURLs.append(newURL) }
+        let tracks = MusicLibrary.audioFiles(in: newURL).map { Track(url: $0, folderID: folder.id) }
+        if let i = folders.firstIndex(where: { $0.id == folder.id }) {
+            folders[i] = Folder(id: folder.id, url: newURL, bookmark: bookmark,
+                                displayName: folder.displayName, isAvailable: true, tracks: tracks)
+        }
+        persistCurrent()
     }
 
     // MARK: Internal
