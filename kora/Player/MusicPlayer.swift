@@ -24,52 +24,70 @@ final class MusicPlayer: ObservableObject {
 
     var onTrackChange: ((Track?, Bool) -> Void)?
 
-    private var player: AVAudioPlayer?
+    private var player: AVPlayer?
     private var progressTimer: Timer?
     private var securityScopedURL: URL?
     private var queue = PlayQueue(tracks: [], startAt: 0)
+    private var itemObservers: Set<AnyCancellable> = []
+    private var durationTask: Task<Void, Never>?
 
     var hasTrack: Bool {
-        player != nil
+        player?.currentItem != nil
     }
 
     init() {
         let saved = UserDefaults.standard.object(forKey: "player.volume") as? Double
         self.volume = saved ?? 1.0
+        configureRemoteCommands()   // defined in NowPlayingCenter.swift
     }
 
     func load(url: URL) {
         stopTimer()
-        player?.stop()
+        player?.pause()
+        itemObservers.removeAll()
+        durationTask?.cancel()
         releaseSecurityScopedURL()
 
         let didStartAccess = url.startAccessingSecurityScopedResource()
+        if didStartAccess { securityScopedURL = url }
 
-        do {
-            let audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer.prepareToPlay()
+        let asset = AVURLAsset(url: url)
+        let item = AVPlayerItem(asset: asset)
+        let avPlayer = AVPlayer(playerItem: item)
+        avPlayer.volume = Float(volume)
 
-            if didStartAccess {
-                securityScopedURL = url
+        player = avPlayer
+        currentTrackName = url.deletingPathExtension().lastPathComponent
+        currentTime = 0
+        duration = 0
+        isPlaying = false
+        errorMessage = nil
+
+        // AVPlayer doesn't throw at init; surface load failures via item status.
+        item.publisher(for: \.status)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] status in
+                guard let self, self.player === avPlayer else { return }
+                if status == .failed { self.errorMessage = "Could not load that audio file." }
             }
+            .store(in: &itemObservers)
 
-            player = audioPlayer
-            currentTrackName = url.deletingPathExtension().lastPathComponent
-            currentTime = 0
-            duration = audioPlayer.duration
-            isPlaying = false
-            errorMessage = nil
-        } catch {
-            if didStartAccess {
-                url.stopAccessingSecurityScopedResource()
+        // AVPlayer posts this at the exact end — replaces the old polling heuristic.
+        NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime, object: item)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.player === avPlayer else { return }
+                self.handlePlaybackFinished()
             }
+            .store(in: &itemObservers)
 
-            player = nil
-            currentTrackName = "No track selected"
-            currentTime = 0
-            duration = 0
-            isPlaying = false
-            errorMessage = "Could not load that audio file."
+        // Duration loads asynchronously; publish it when known (the seek bar tolerates 0).
+        durationTask = Task { [weak self] in
+            let loaded = try? await asset.load(.duration)
+            guard let self, !Task.isCancelled, self.player === avPlayer else { return }
+            let seconds = loaded?.seconds ?? 0
+            self.duration = seconds.isFinite ? seconds : 0
+            self.updateNowPlayingInfo()
         }
     }
 
@@ -78,35 +96,36 @@ final class MusicPlayer: ObservableObject {
             errorMessage = "Choose an audio file first."
             return
         }
-
-        if player.isPlaying {
-            player.pause()
-            isPlaying = false
-            stopTimer()
-        } else {
+        if player.timeControlStatus == .paused {
             player.play()
             isPlaying = true
             errorMessage = nil
             startTimer()
+        } else {
+            player.pause()
+            isPlaying = false
+            stopTimer()
         }
+        updateNowPlayingInfo()
         onTrackChange?(queue.current, isPlaying)
     }
 
     func stop() {
-        player?.stop()
-        player?.currentTime = 0
+        player?.pause()
+        player?.seek(to: .zero)
         currentTime = 0
         isPlaying = false
         stopTimer()
+        updateNowPlayingInfo()
         onTrackChange?(queue.current, false)
     }
 
     func seek(to time: TimeInterval) {
         guard let player else { return }
-
-        let clampedTime = min(max(time, 0), duration)
-        player.currentTime = clampedTime
-        currentTime = clampedTime
+        let clamped = min(max(time, 0), duration)
+        player.seek(to: CMTime(seconds: clamped, preferredTimescale: 600))
+        currentTime = clamped
+        updateNowPlayingInfo()
     }
 
     func reportFileSelectionFailure() {
@@ -148,13 +167,13 @@ final class MusicPlayer: ObservableObject {
     private func loadAndPlayCurrent() {
         guard let track = queue.current else { return }
         syncQueue()
-        load(url: track.url)              // existing method sets player/duration/etc.
-        player?.volume = Float(volume)
+        load(url: track.url)              // sets up AVPlayer/duration/observers
         currentTrackName = track.title
         artist = track.artist
         player?.play()
         isPlaying = true
         startTimer()
+        updateNowPlayingInfo()
         onTrackChange?(track, true)
         Task { await refreshMetadata(for: track) }
     }
@@ -168,7 +187,16 @@ final class MusicPlayer: ObservableObject {
         artist = meta.artist
         artwork = art
         theme = await ArtworkPalette.theme(for: art)
+        updateNowPlayingInfo()
         onTrackChange?(queue.current, isPlaying)
+    }
+
+    private func handlePlaybackFinished() {
+        if queue.hasNext {
+            next()
+        } else {
+            stop()   // stop() already fires onTrackChange(false) + updateNowPlayingInfo()
+        }
     }
 
     private func startTimer() {
@@ -185,40 +213,27 @@ final class MusicPlayer: ObservableObject {
         progressTimer = nil
     }
 
-    // Timer-based finish detection keeps playback simple; use AVAudioPlayerDelegate if precision becomes necessary.
-    nonisolated static func shouldAdvanceOnFinish(wasPlaying: Bool, isPlayerPlaying: Bool, currentTime: TimeInterval, duration: TimeInterval) -> Bool {
-        guard wasPlaying, !isPlayerPlaying, duration > 0 else { return false }
-        return currentTime >= duration - 0.25
-    }
-
     private func syncProgress() {
-        guard let player else {
+        guard let player, player.currentItem != nil else {
             currentTime = 0
             isPlaying = false
             stopTimer()
             return
         }
-
-        let wasPlaying = isPlaying
-        currentTime = player.currentTime
-
-        if !player.isPlaying {
-            isPlaying = false
-            stopTimer()
-
-            if MusicPlayer.shouldAdvanceOnFinish(wasPlaying: wasPlaying, isPlayerPlaying: player.isPlaying, currentTime: currentTime, duration: duration) {
-                if queue.hasNext {
-                    next()
-                } else {
-                    stop()
-                    onTrackChange?(queue.current, false)
-                }
-            }
-        }
+        let t = player.currentTime().seconds
+        if t.isFinite { currentTime = t }
+        // Now Playing elapsed is set on state changes (play/pause/seek); the system
+        // extrapolates between them from the playback rate, so no per-tick update here.
     }
 
     private func releaseSecurityScopedURL() {
         securityScopedURL?.stopAccessingSecurityScopedResource()
         securityScopedURL = nil
     }
+}
+
+// TEMPORARY STUB — remove in Task 3 once NowPlayingCenter.swift defines these.
+extension MusicPlayer {
+    func configureRemoteCommands() {}
+    func updateNowPlayingInfo() {}
 }
