@@ -1,12 +1,9 @@
 import SwiftUI
 import AppKit
-import UniformTypeIdentifiers
 
 struct LibrarySidebar: View {
     @EnvironmentObject var library: MusicLibrary
     @EnvironmentObject var player: MusicPlayer
-    @State private var choosingFolder = false
-    @State private var locating: MusicLibrary.Folder?
     @State private var renaming: MusicLibrary.Folder?
     @State private var draftName = ""
 
@@ -21,19 +18,10 @@ struct LibrarySidebar: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            Button { choosingFolder = true } label: { Label("Add Folder", systemImage: "plus") }
+            Button {
+                if let url = pickFolder() { library.addFolder(url: url) }
+            } label: { Label("Add Folder", systemImage: "plus") }
                 .padding(8)
-        }
-        .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder]) { result in
-            if case .success(let url) = result { library.addFolder(url: url) }
-        }
-        .fileImporter(isPresented: Binding(get: { locating != nil },
-                                           set: { if !$0 { locating = nil } }),
-                      allowedContentTypes: [.folder]) { result in
-            if case .success(let url) = result, let folder = locating {
-                library.relink(folder, to: url)
-            }
-            locating = nil
         }
         .alert("Rename Folder", isPresented: Binding(get: { renaming != nil },
                                                      set: { if !$0 { renaming = nil } })) {
@@ -43,6 +31,18 @@ struct LibrarySidebar: View {
         }
     }
 
+    /// Native folder chooser. Reliable on macOS and avoids SwiftUI's
+    /// multiple-`.fileImporter`-per-view conflict that silently swallowed
+    /// the "Add Folder" button. Synchronous modal is standard for a picker.
+    private func pickFolder() -> URL? {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Choose"
+        return panel.runModal() == .OK ? panel.url : nil
+    }
+
     private var folderList: some View {
         List {
             ForEach(library.folders) { folder in
@@ -50,8 +50,10 @@ struct LibrarySidebar: View {
                     if folder.isAvailable {
                         ForEach(folder.tracks) { track in trackRow(track, in: folder) }
                     } else {
-                        Button("Locate…") { locating = folder }
-                            .foregroundStyle(.secondary)
+                        Button("Locate…") {
+                            if let url = pickFolder() { library.relink(folder, to: url) }
+                        }
+                        .foregroundStyle(.secondary)
                     }
                 } header: {
                     HStack {
@@ -99,7 +101,9 @@ struct LibrarySidebar: View {
                 if let url = folder.url { NSWorkspace.shared.activateFileViewerSelecting([url]) }
             }
         } else {
-            Button("Locate…") { locating = folder }
+            Button("Locate…") {
+                if let url = pickFolder() { library.relink(folder, to: url) }
+            }
         }
         Button("Rename…") { renaming = folder; draftName = folder.name }
         Button("Forget Folder", role: .destructive) { library.forget(folder) }
