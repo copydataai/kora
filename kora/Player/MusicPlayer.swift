@@ -231,9 +231,3 @@ final class MusicPlayer: ObservableObject {
         securityScopedURL = nil
     }
 }
-
-// TEMPORARY STUB — remove in Task 3 once NowPlayingCenter.swift defines these.
-extension MusicPlayer {
-    func configureRemoteCommands() {}
-    func updateNowPlayingInfo() {}
-}
