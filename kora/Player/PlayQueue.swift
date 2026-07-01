@@ -4,6 +4,8 @@ import SwiftUI   // for Array.move(fromOffsets:toOffset:)
 struct PlayQueue {
     private(set) var tracks: [Track]
     private(set) var index: Int
+    private(set) var isShuffled = false
+    private var originalTracks: [Track] = []
 
     init(tracks: [Track], startAt: Int = 0) {
         self.tracks = tracks
@@ -39,6 +41,28 @@ struct PlayQueue {
         tracks.move(fromOffsets: source, toOffset: destination)
         if let currentID, let i = tracks.firstIndex(where: { $0.id == currentID }) {
             index = i
+        }
+    }
+
+    /// Shuffling moves the current track to the front so playback never jumps;
+    /// un-shuffling restores the pre-shuffle order and re-finds the current track.
+    mutating func setShuffled(_ on: Bool) {
+        guard on != isShuffled else { return }
+        isShuffled = on
+        if on {
+            originalTracks = tracks
+            guard let current else { return }
+            var rest = tracks
+            rest.removeAll { $0.id == current.id }
+            rest.shuffle()
+            tracks = [current] + rest
+            index = 0
+        } else {
+            let currentID = current?.id
+            // Guard: a session restored mid-shuffle has no original order to return to.
+            if !originalTracks.isEmpty { tracks = originalTracks }
+            originalTracks = []
+            index = tracks.firstIndex { $0.id == currentID } ?? 0
         }
     }
 }

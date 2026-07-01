@@ -60,4 +60,37 @@ struct PlayQueueTests {
         #expect(q.tracks.map(\.title) == ["c", "a", "b"])
         #expect(q.current?.title == "b")
     }
+
+    @Test @MainActor func shuffleKeepsCurrentFirstAndPreservesTrackSet() {
+        let a = track("a"), b = track("b"), c = track("c"), d = track("d")
+        var q = PlayQueue(tracks: [a, b, c, d], startAt: 2)   // current = c
+        q.setShuffled(true)
+        #expect(q.isShuffled)
+        #expect(q.current?.title == "c")                       // playback never jumps
+        #expect(q.index == 0)                                  // current leads the shuffled order
+        #expect(Set(q.tracks.map(\.title)) == ["a", "b", "c", "d"])
+    }
+
+    @Test @MainActor func unshuffleRestoresOriginalOrderAndCurrentTrack() {
+        let a = track("a"), b = track("b"), c = track("c")
+        var q = PlayQueue(tracks: [a, b, c], startAt: 1)       // current = b
+        q.setShuffled(true)
+        q.setShuffled(false)
+        #expect(!q.isShuffled)
+        #expect(q.tracks.map(\.title) == ["a", "b", "c"])
+        #expect(q.current?.title == "b")
+    }
+
+    @Test @MainActor func shuffleOnEmptyOrRedundantCallsIsSafe() {
+        var empty = PlayQueue(tracks: [], startAt: 0)
+        empty.setShuffled(true)
+        #expect(empty.current == nil)
+
+        var q = PlayQueue(tracks: [track("a")], startAt: 0)
+        q.setShuffled(false)                                   // no-op: already off
+        #expect(q.tracks.count == 1)                           // must not clobber tracks
+        q.setShuffled(true)
+        q.setShuffled(true)                                    // no-op: already on
+        #expect(q.tracks.count == 1)
+    }
 }
