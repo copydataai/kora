@@ -7,9 +7,13 @@ struct PlayQueue {
     private(set) var isShuffled = false
     private var originalTracks: [Track] = []
 
-    init(tracks: [Track], startAt: Int = 0) {
+    /// `isShuffled: true` marks a queue already in shuffled order (a restored
+    /// session); there's no original order to return to, which setShuffled(false)
+    /// tolerates.
+    init(tracks: [Track], startAt: Int = 0, isShuffled: Bool = false) {
         self.tracks = tracks
         self.index = tracks.isEmpty ? 0 : min(max(startAt, 0), tracks.count - 1)
+        self.isShuffled = isShuffled
     }
 
     var current: Track? {

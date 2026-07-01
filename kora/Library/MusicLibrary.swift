@@ -82,6 +82,9 @@ final class MusicLibrary: ObservableObject {
     }
 
     func restore() {
+        // The window's .task re-runs on every reopen; restoring twice would
+        // duplicate every folder.
+        guard folders.isEmpty else { return }
         var refreshedAny = false
         for entry in loadPersisted() {
             var stale = false

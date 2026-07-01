@@ -94,6 +94,17 @@ struct PlayQueueTests {
         #expect(q.tracks.count == 1)
     }
 
+    // A restored session is already in shuffled order with no original to return
+    // to; un-shuffling must keep the tracks rather than clobber them.
+    @Test @MainActor func unshuffleOnRestoredShuffledQueueKeepsTracks() {
+        var q = PlayQueue(tracks: [track("a"), track("b")], startAt: 1, isShuffled: true)
+        #expect(q.isShuffled)
+        q.setShuffled(false)
+        #expect(!q.isShuffled)
+        #expect(q.tracks.count == 2)
+        #expect(q.current?.title == "b")
+    }
+
     // End-of-track policy: this is WHY repeat modes exist — one loops the track,
     // all loops the queue, off stops at the end. Encoded as a pure function so
     // it's testable without AVPlayer.

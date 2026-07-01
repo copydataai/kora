@@ -140,6 +140,7 @@ final class MusicPlayer: ObservableObject {
         player.seek(to: CMTime(seconds: clamped, preferredTimescale: 600))
         currentTime = clamped
         updateNowPlayingInfo()
+        persistSession(force: true)   // a paused seek must survive quit
     }
 
     func reportFileSelectionFailure() {
@@ -176,6 +177,8 @@ final class MusicPlayer: ObservableObject {
     /// Restore the last session, paused, at the saved position. Called after
     /// MusicLibrary.restore() so folder security scopes are already active.
     func restoreSession(matching libraryTracks: [Track]) {
+        // The window's .task re-runs on every reopen; never clobber live playback.
+        guard !hasTrack else { return }
         guard let data = UserDefaults.standard.data(forKey: sessionKey),
               let session = PersistedSession.decode(data),
               session.isRestorable(fileExists: { FileManager.default.fileExists(atPath: $0) })
@@ -191,7 +194,7 @@ final class MusicPlayer: ObservableObject {
             byPath[path] ?? Track(url: URL(fileURLWithPath: path), folderID: UUID())
         }
 
-        queue = PlayQueue(tracks: tracks, startAt: session.index)
+        queue = PlayQueue(tracks: tracks, startAt: session.index, isShuffled: isShuffled)
         guard let track = queue.current else { return }
         syncQueue()
         load(url: track.url)
@@ -203,6 +206,8 @@ final class MusicPlayer: ObservableObject {
         currentTime = session.elapsed
         updateNowPlayingInfo()
         onTrackChange?(track, false)   // stays paused — never auto-play at launch
+        // Re-persist: syncQueue()/load() above saved with elapsed reset to 0.
+        persistSession(force: true)
         Task { await refreshMetadata(for: track) }
     }
 
