@@ -9,7 +9,10 @@ no library import, no accounts, no clutter.
 - **Adaptive now-playing** that takes on the current album art's color — blurred-art backdrop, art-derived accent, cross-fading as tracks change.
 - **Up Next** queue inspector: see what's coming, click a track to jump, drag to reorder.
 - **Folder management**: rescan for on-disk changes, rename and reorder, reveal in Finder, and re-link folders that moved.
-- Play/pause, previous/next, seek, volume, and auto-advance through a folder.
+- Play/pause, previous/next, seek, volume, **shuffle & repeat**, and auto-advance through a folder.
+- **Search** (⌘F) across every folder from the sidebar.
+- **Resumes where you left off**: last queue, track, and position restore (paused) on launch.
+- Close the window and the music keeps playing; reopen or quit from the menu bar.
 - A **menu-bar mini-player** plus Playback menu commands (⌘← / ⌘→ to skip).
 - Drag a folder onto the window to add it; drag an audio file to play it.
 - A macOS **now-playing widget**.
@@ -38,6 +41,25 @@ xcodebuild test -project kora.xcodeproj -scheme kora -destination 'platform=macO
 ```
 
 CI runs build and unit tests with `CODE_SIGNING_ALLOWED=NO`. Full UI tests are part of the shared scheme and should be run locally on a signed development machine.
+
+## Release
+
+Tagging `vX.Y.Z` on `main` triggers `.github/workflows/release.yml`, which
+archives, signs, notarizes, and staples the app, then attaches a DMG to a
+GitHub Release:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+Required repository secrets (Settings → Secrets → Actions):
+
+- `MACOS_CERTIFICATE` — base64 of a Developer ID Application `.p12`
+  (`base64 -i cert.p12 | pbcopy`)
+- `MACOS_CERTIFICATE_PASSWORD` — the `.p12` password
+- `APPLE_ID` — Apple ID email of the developer account
+- `APPLE_TEAM_ID` — 10-character team ID
+- `APPLE_APP_PASSWORD` — app-specific password (appleid.apple.com)
 
 ## Project layout
 
