@@ -6,10 +6,13 @@ struct LibrarySidebar: View {
     @EnvironmentObject var player: MusicPlayer
     @State private var renaming: MusicLibrary.Folder?
     @State private var draftName = ""
+    @State private var searchText = ""
 
     var body: some View {
         Group {
-            if library.folders.isEmpty {
+            if !searchText.isEmpty {
+                searchResultsList
+            } else if library.folders.isEmpty {
                 ContentUnavailableView("No folders yet",
                     systemImage: "folder.badge.plus",
                     description: Text("Add a folder to start listening."))
@@ -17,6 +20,7 @@ struct LibrarySidebar: View {
                 folderList
             }
         }
+        .searchable(text: $searchText, placement: .sidebar, prompt: "Search tracks")
         .safeAreaInset(edge: .bottom) {
             Button {
                 if let url = pickFolder() { library.addFolder(url: url) }
@@ -69,6 +73,24 @@ struct LibrarySidebar: View {
                 .contextMenu { folderMenu(folder) }
             }
             .onMove { library.moveFolders(fromOffsets: $0, toOffset: $1) }
+        }
+    }
+
+    /// Flat cross-folder results; each row plays within its folder's queue,
+    /// exactly like clicking the track in the folder tree.
+    private var searchResultsList: some View {
+        let results = library.folders.filter(\.isAvailable).flatMap { folder in
+            folder.tracks.filter { MusicLibrary.matches($0, query: searchText) }
+                .map { (track: $0, folder: folder) }
+        }
+        return List {
+            if results.isEmpty {
+                Text("No matches").foregroundStyle(.secondary)
+            } else {
+                ForEach(results, id: \.track.id) { result in
+                    trackRow(result.track, in: result.folder)
+                }
+            }
         }
     }
 
