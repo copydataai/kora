@@ -6,7 +6,7 @@ struct koraApp: App {
     @StateObject private var player = MusicPlayer()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             ContentView()
                 .environmentObject(library)
                 .environmentObject(player)
@@ -52,10 +52,30 @@ struct koraApp: App {
                 }
                 .buttonStyle(.plain)
                 .disabled(!player.hasTrack)
+                MenuBarWindowControls()
             }
             .padding(12)
             .frame(width: 260)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+/// Lives inside the MenuBarExtra so it can reach the openWindow action;
+/// the App struct itself has no environment.
+private struct MenuBarWindowControls: View {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Divider()
+        HStack {
+            Button("Open Kora") {
+                openWindow(id: "main")
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            Spacer()
+            Button("Quit") { NSApplication.shared.terminate(nil) }
+        }
+        .buttonStyle(.link)
     }
 }
