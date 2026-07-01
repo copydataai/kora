@@ -93,4 +93,16 @@ struct PlayQueueTests {
         q.setShuffled(true)                                    // no-op: already on
         #expect(q.tracks.count == 1)
     }
+
+    // End-of-track policy: this is WHY repeat modes exist — one loops the track,
+    // all loops the queue, off stops at the end. Encoded as a pure function so
+    // it's testable without AVPlayer.
+    @Test func finishActionHonorsRepeatMode() {
+        #expect(MusicPlayer.finishAction(repeatMode: .one, hasNext: true) == .replay)
+        #expect(MusicPlayer.finishAction(repeatMode: .one, hasNext: false) == .replay)
+        #expect(MusicPlayer.finishAction(repeatMode: .all, hasNext: true) == .advance)
+        #expect(MusicPlayer.finishAction(repeatMode: .all, hasNext: false) == .wrapToStart)
+        #expect(MusicPlayer.finishAction(repeatMode: .off, hasNext: true) == .advance)
+        #expect(MusicPlayer.finishAction(repeatMode: .off, hasNext: false) == .stop)
+    }
 }

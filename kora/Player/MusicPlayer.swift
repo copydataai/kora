@@ -2,6 +2,10 @@ import AVFoundation
 import Combine
 import Foundation
 
+enum RepeatMode: String, CaseIterable {
+    case off, all, one
+}
+
 @MainActor
 final class MusicPlayer: ObservableObject {
     @Published private(set) var currentTrackName = "No track selected"
@@ -21,6 +25,10 @@ final class MusicPlayer: ObservableObject {
             UserDefaults.standard.set(volume, forKey: "player.volume")
         }
     }
+    @Published var repeatMode: RepeatMode {
+        didSet { UserDefaults.standard.set(repeatMode.rawValue, forKey: "player.repeatMode") }
+    }
+    @Published private(set) var isShuffled: Bool
 
     var onTrackChange: ((Track?, Bool) -> Void)?
 
@@ -38,6 +46,9 @@ final class MusicPlayer: ObservableObject {
     init() {
         let saved = UserDefaults.standard.object(forKey: "player.volume") as? Double
         self.volume = saved ?? 1.0
+        let savedRepeat = UserDefaults.standard.string(forKey: "player.repeatMode")
+        self.repeatMode = savedRepeat.flatMap(RepeatMode.init(rawValue:)) ?? .off
+        self.isShuffled = UserDefaults.standard.bool(forKey: "player.shuffle")
         configureRemoteCommands()   // defined in NowPlayingCenter.swift
     }
 
@@ -135,6 +146,7 @@ final class MusicPlayer: ObservableObject {
     func play(track: Track, in tracks: [Track]) {
         let start = tracks.firstIndex(of: track) ?? 0
         queue = PlayQueue(tracks: tracks, startAt: start)
+        if isShuffled { queue.setShuffled(true) }
         loadAndPlayCurrent()
     }
 
@@ -156,6 +168,29 @@ final class MusicPlayer: ObservableObject {
     func moveInQueue(fromOffsets source: IndexSet, toOffset destination: Int) {
         queue.move(fromOffsets: source, toOffset: destination)
         syncQueue()
+    }
+
+    enum FinishAction { case replay, advance, wrapToStart, stop }
+
+    nonisolated static func finishAction(repeatMode: RepeatMode, hasNext: Bool) -> FinishAction {
+        switch (repeatMode, hasNext) {
+        case (.one, _): return .replay
+        case (_, true): return .advance
+        case (.all, false): return .wrapToStart
+        default: return .stop
+        }
+    }
+
+    func toggleShuffle() {
+        isShuffled.toggle()
+        UserDefaults.standard.set(isShuffled, forKey: "player.shuffle")
+        queue.setShuffled(isShuffled)
+        syncQueue()
+    }
+
+    func cycleRepeatMode() {
+        let all = RepeatMode.allCases
+        repeatMode = all[(all.firstIndex(of: repeatMode)! + 1) % all.count]
     }
 
     private func syncQueue() {
@@ -192,9 +227,18 @@ final class MusicPlayer: ObservableObject {
     }
 
     private func handlePlaybackFinished() {
-        if queue.hasNext {
+        switch MusicPlayer.finishAction(repeatMode: repeatMode, hasNext: queue.hasNext) {
+        case .replay:
+            seek(to: 0)
+            player?.play()
+            isPlaying = true
+            startTimer()
+        case .advance:
             next()
-        } else {
+        case .wrapToStart:
+            queue.jump(to: 0)
+            loadAndPlayCurrent()
+        case .stop:
             stop()   // stop() already fires onTrackChange(false) + updateNowPlayingInfo()
         }
     }
