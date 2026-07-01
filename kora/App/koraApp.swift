@@ -22,6 +22,14 @@ struct koraApp: App {
                     .keyboardShortcut(.rightArrow, modifiers: .command)
                 Button("Previous") { player.previous() }
                     .keyboardShortcut(.leftArrow, modifiers: .command)
+                Divider()
+                Button(player.isShuffled ? "Shuffle Off" : "Shuffle On") { player.toggleShuffle() }
+                    .keyboardShortcut("s", modifiers: [.command, .option])
+                Picker("Repeat", selection: $player.repeatMode) {
+                    Text("Off").tag(RepeatMode.off)
+                    Text("All").tag(RepeatMode.all)
+                    Text("One").tag(RepeatMode.one)
+                }
             }
         }
 

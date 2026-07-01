@@ -92,6 +92,11 @@ struct NowPlayingView: View {
 
     private var transport: some View {
         HStack(spacing: 24) {
+            Button { player.toggleShuffle() } label: {
+                Image(systemName: "shuffle").font(.body)
+            }
+            .foregroundStyle(player.isShuffled ? player.theme.accent : player.theme.textPrimary.opacity(0.5))
+            .accessibilityLabel(player.isShuffled ? "Shuffle on" : "Shuffle off")
             Button { player.previous() } label: { Image(systemName: "backward.fill") }
                 .accessibilityLabel("Previous")
             Button { player.playPause() } label: {
@@ -101,6 +106,11 @@ struct NowPlayingView: View {
             .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
             Button { player.next() } label: { Image(systemName: "forward.fill") }
                 .accessibilityLabel("Next")
+            Button { player.cycleRepeatMode() } label: {
+                Image(systemName: player.repeatMode == .one ? "repeat.1" : "repeat").font(.body)
+            }
+            .foregroundStyle(player.repeatMode == .off ? player.theme.textPrimary.opacity(0.5) : player.theme.accent)
+            .accessibilityLabel("Repeat \(player.repeatMode.rawValue)")
         }
         .font(.title2)
         .foregroundStyle(player.theme.textPrimary)
