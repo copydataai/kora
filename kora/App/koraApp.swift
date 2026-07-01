@@ -13,6 +13,7 @@ struct koraApp: App {
                 .task {
                     library.restore()
                     player.onTrackChange = { track, playing in NowPlayingState.write(track: track, isPlaying: playing) }
+                    player.restoreSession(matching: library.folders.flatMap(\.tracks))
                 }
         }
         .commands {

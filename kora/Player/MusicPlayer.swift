@@ -38,6 +38,8 @@ final class MusicPlayer: ObservableObject {
     private var queue = PlayQueue(tracks: [], startAt: 0)
     private var itemObservers: Set<AnyCancellable> = []
     private var durationTask: Task<Void, Never>?
+    private let sessionKey = "player.session.v1"
+    private var lastSessionWrite: Date = .distantPast
 
     var hasTrack: Bool {
         player?.currentItem != nil
@@ -119,6 +121,7 @@ final class MusicPlayer: ObservableObject {
         }
         updateNowPlayingInfo()
         onTrackChange?(queue.current, isPlaying)
+        persistSession(force: true)
     }
 
     func stop() {
@@ -170,6 +173,47 @@ final class MusicPlayer: ObservableObject {
         syncQueue()
     }
 
+    /// Restore the last session, paused, at the saved position. Called after
+    /// MusicLibrary.restore() so folder security scopes are already active.
+    func restoreSession(matching libraryTracks: [Track]) {
+        guard let data = UserDefaults.standard.data(forKey: sessionKey),
+              let session = PersistedSession.decode(data),
+              session.isRestorable(fileExists: { FileManager.default.fileExists(atPath: $0) })
+        else { return }
+
+        // Prefer the library's Track for a path (keeps folderID); fall back to a
+        // bare Track for files that left the library but still exist on disk.
+        var byPath: [String: Track] = [:]
+        for track in libraryTracks where byPath[track.url.path] == nil {
+            byPath[track.url.path] = track
+        }
+        let tracks = session.paths.map { path in
+            byPath[path] ?? Track(url: URL(fileURLWithPath: path), folderID: UUID())
+        }
+
+        queue = PlayQueue(tracks: tracks, startAt: session.index)
+        guard let track = queue.current else { return }
+        syncQueue()
+        load(url: track.url)
+        currentTrackName = track.title
+        artist = track.artist
+        // Seek directly: seek(to:) clamps to `duration`, which is still 0 here.
+        // AVPlayer queues the seek and applies it once the item is ready.
+        player?.seek(to: CMTime(seconds: session.elapsed, preferredTimescale: 600))
+        currentTime = session.elapsed
+        updateNowPlayingInfo()
+        onTrackChange?(track, false)   // stays paused — never auto-play at launch
+        Task { await refreshMetadata(for: track) }
+    }
+
+    private func persistSession(force: Bool = false) {
+        guard force || Date.now.timeIntervalSince(lastSessionWrite) > 5 else { return }
+        lastSessionWrite = .now
+        let session = PersistedSession(paths: queue.tracks.map(\.url.path),
+                                       index: queue.index, elapsed: currentTime)
+        UserDefaults.standard.set(session.encode(), forKey: sessionKey)
+    }
+
     enum FinishAction { case replay, advance, wrapToStart, stop }
 
     nonisolated static func finishAction(repeatMode: RepeatMode, hasNext: Bool) -> FinishAction {
@@ -197,6 +241,7 @@ final class MusicPlayer: ObservableObject {
         queueTracks = queue.tracks
         queueIndex = queue.index
         currentTrackID = queue.current?.id
+        persistSession(force: true)
     }
 
     private func loadAndPlayCurrent() {
@@ -266,6 +311,7 @@ final class MusicPlayer: ObservableObject {
         }
         let t = player.currentTime().seconds
         if t.isFinite { currentTime = t }
+        persistSession()
         // Now Playing elapsed is set on state changes (play/pause/seek); the system
         // extrapolates between them from the playback rate, so no per-tick update here.
     }
