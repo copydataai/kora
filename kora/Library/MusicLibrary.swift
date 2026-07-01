@@ -183,8 +183,10 @@ final class MusicLibrary: ObservableObject {
 }
 
 extension MusicLibrary {
+    // ogg/opus intentionally absent: AVPlayer can't decode them, so scanning
+    // them in produced tracks that silently failed to play.
     nonisolated static let audioExtensions: Set<String> = [
-        "mp3", "m4a", "aac", "wav", "aif", "aiff", "flac", "alac", "caf", "ogg", "opus"
+        "mp3", "m4a", "aac", "wav", "aif", "aiff", "flac", "alac", "caf"
     ]
 
     /// Recursively collect audio files under `folder`, sorted by path for stable order.

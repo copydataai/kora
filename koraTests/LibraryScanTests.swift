@@ -42,6 +42,16 @@ struct LibraryScanTests {
         #expect(MusicLibrary.audioFiles(in: root).map(\.lastPathComponent) == ["b.mp3"])
     }
 
+    @Test func skipsFormatsAVPlayerCannotDecode() {
+        let root = tempDir()
+        write("a.mp3", in: root)
+        write("b.ogg", in: root)
+        write("c.opus", in: root)
+
+        // AVPlayer can't decode ogg/opus; scanning them in means silent play failures.
+        #expect(MusicLibrary.audioFiles(in: root).map(\.lastPathComponent) == ["a.mp3"])
+    }
+
     @Test @MainActor func trackTitleDefaultsToFilename() {
         let t = Track(url: URL(fileURLWithPath: "/m/Song Name.m4a"), folderID: UUID())
         #expect(t.title == "Song Name")
