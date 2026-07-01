@@ -57,4 +57,21 @@ struct LibraryScanTests {
         #expect(t.title == "Song Name")
         #expect(t.artist == nil)
     }
+
+    // Search is filename/title search by design: tags aren't indexed at scan,
+    // so `title` (filename-derived) is what the user can actually match on.
+    @Test @MainActor func searchMatchesTitleAndArtistCaseInsensitively() {
+        let t = Track(url: URL(fileURLWithPath: "/m/Blue Train.mp3"), folderID: UUID(),
+                      artist: "John Coltrane")
+        #expect(MusicLibrary.matches(t, query: "blue"))
+        #expect(MusicLibrary.matches(t, query: "TRAIN"))
+        #expect(MusicLibrary.matches(t, query: "coltrane"))
+        #expect(!MusicLibrary.matches(t, query: "miles"))
+    }
+
+    @Test @MainActor func emptyOrWhitespaceQueryMatchesNothing() {
+        let t = Track(url: URL(fileURLWithPath: "/m/a.mp3"), folderID: UUID())
+        #expect(!MusicLibrary.matches(t, query: ""))
+        #expect(!MusicLibrary.matches(t, query: "   "))
+    }
 }

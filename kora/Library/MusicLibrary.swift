@@ -204,4 +204,14 @@ extension MusicLibrary {
         }
         return result.sorted { $0.path < $1.path }
     }
+
+    /// Filename/title + artist search. Tags aren't indexed at scan time, so
+    /// this is filename search in practice — good enough until it isn't.
+    nonisolated static func matches(_ track: Track, query: String) -> Bool {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return false }
+        if track.title.localizedCaseInsensitiveContains(q) { return true }
+        if let artist = track.artist, artist.localizedCaseInsensitiveContains(q) { return true }
+        return false
+    }
 }
