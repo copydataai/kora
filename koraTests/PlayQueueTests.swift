@@ -3,8 +3,8 @@ import Foundation
 @testable import kora
 
 @MainActor
-private func track(_ name: String) -> Track {
-    Track(url: URL(fileURLWithPath: "/tmp/\(name).mp3"), folderID: UUID())
+private func track(_ name: String, folderID: UUID = UUID()) -> Track {
+    Track(url: URL(fileURLWithPath: "/tmp/\(name).mp3"), folderID: folderID)
 }
 
 struct PlayQueueTests {
@@ -50,6 +50,57 @@ struct PlayQueueTests {
         #expect(q.tracks.map(\.title) == ["a", "b", "d", "e", "c"])
         #expect(q.current?.title == "b")
         #expect(q.index == 1)
+    }
+
+    @Test @MainActor func playNextAddsCrossFolderTrackWithoutChangingCurrent() {
+        let folder = UUID()
+        let a = track("a", folderID: folder), b = track("b", folderID: folder)
+        let other = track("other", folderID: UUID())
+        var q = PlayQueue(tracks: [a, b], startAt: 0)
+        q.playNext(other)
+        #expect(q.tracks.map(\.id) == [a.id, other.id, b.id])
+        #expect(q.current?.id == a.id)
+        #expect(q.index == 0)
+    }
+
+    @Test @MainActor func queueActionsRepositionExistingTrackWithoutDuplicates() {
+        let a = track("a"), b = track("b"), c = track("c"), d = track("d")
+        var q = PlayQueue(tracks: [a, b, c, d], startAt: 1)
+        q.playNext(d)
+        #expect(q.tracks.map(\.id) == [a.id, b.id, d.id, c.id])
+        #expect(q.tracks.filter { $0.id == d.id }.count == 1)
+        q.addToEnd(d)
+        #expect(q.tracks.map(\.id) == [a.id, b.id, c.id, d.id])
+        #expect(q.tracks.filter { $0.id == d.id }.count == 1)
+    }
+
+    @Test @MainActor func queuingPastTrackRefindsCurrentTrack() {
+        let a = track("a"), b = track("b"), c = track("c")
+        var q = PlayQueue(tracks: [a, b, c], startAt: 1)
+        q.playNext(a)
+        #expect(q.tracks.map(\.id) == [b.id, a.id, c.id])
+        #expect(q.current?.id == b.id)
+        #expect(q.index == 0)
+    }
+
+    @Test @MainActor func queueActionsLeaveEmptyQueueEmpty() {
+        let candidate = track("candidate")
+        var q = PlayQueue(tracks: [])
+        q.playNext(candidate)
+        q.addToEnd(candidate)
+        #expect(q.tracks.isEmpty)
+        #expect(q.current == nil)
+    }
+
+    @Test @MainActor func manualShuffleEditsBecomeAuthoritative() {
+        let a = track("a"), b = track("b"), c = track("c"), added = track("added")
+        var q = PlayQueue(tracks: [a, b, c], startAt: 1)
+        q.setShuffled(true)
+        q.clearUpcoming()
+        q.addToEnd(added)
+        q.setShuffled(false)
+        #expect(q.tracks.map(\.id) == [b.id, added.id])
+        #expect(q.current?.id == b.id)
     }
 
     @Test @MainActor func removingUpcomingNeverInterruptsCurrentTrack() {

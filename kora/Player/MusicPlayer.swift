@@ -174,6 +174,16 @@ final class MusicPlayer: ObservableObject {
         syncQueue()
     }
 
+    func playNext(_ track: Track) {
+        queue.playNext(track)
+        syncQueue()
+    }
+
+    func addToEnd(_ track: Track) {
+        queue.addToEnd(track)
+        syncQueue()
+    }
+
     func removeUpcoming(atOffsets offsets: IndexSet) {
         queue.removeUpcoming(atOffsets: offsets)
         syncQueue()

@@ -47,16 +47,38 @@ struct PlayQueue {
         discardOriginalOrder()
     }
 
+    mutating func playNext(_ track: Track) {
+        place(track, at: index + 1)
+    }
+
+    mutating func addToEnd(_ track: Track) {
+        place(track, at: tracks.endIndex)
+    }
+
     /// Offsets are relative to the upcoming slice, so the current track can
     /// never be removed out from under playback.
     mutating func removeUpcoming(atOffsets offsets: IndexSet) {
         let absolute = IndexSet(offsets.map { index + 1 + $0 })
         tracks.remove(atOffsets: absolute)
+        discardOriginalOrder()
     }
 
     mutating func clearUpcoming() {
         guard current != nil else { return }
         tracks.removeSubrange((index + 1)..<tracks.endIndex)
+        discardOriginalOrder()
+    }
+
+    private mutating func place(_ track: Track, at destination: Int) {
+        guard let current, current.id != track.id else { return }
+        let currentID = current.id
+        if let source = tracks.firstIndex(where: { $0.id == track.id }) {
+            tracks.move(fromOffsets: IndexSet(integer: source), toOffset: destination)
+        } else {
+            tracks.insert(track, at: destination)
+        }
+        index = tracks.firstIndex(where: { $0.id == currentID }) ?? index
+        discardOriginalOrder()
     }
 
     private mutating func discardOriginalOrder() {

@@ -109,6 +109,10 @@ struct LibrarySidebar: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
+            Button("Play Next") { player.playNext(track) }
+                .disabled(!player.hasTrack)
+            Button("Add to End") { player.addToEnd(track) }
+                .disabled(!player.hasTrack)
             Button("Reveal in Finder") {
                 NSWorkspace.shared.activateFileViewerSelecting([track.url])
             }

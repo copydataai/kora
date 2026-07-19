@@ -17,6 +17,13 @@ struct QueueView: View {
                         Section("Up Next") {
                             ForEach(Array(upcoming.enumerated()), id: \.element.id) { offset, track in
                                 queueRow(track, index: player.queueIndex + 1 + offset)
+                                    .contextMenu {
+                                        Button("Play Next") { player.playNext(track) }
+                                        Button("Add to End") { player.addToEnd(track) }
+                                        Button("Remove from Up Next", role: .destructive) {
+                                            player.removeUpcoming(atOffsets: IndexSet(integer: offset))
+                                        }
+                                    }
                             }
                             .onDelete(perform: player.removeUpcoming)
                             .onMove(perform: player.moveUpcoming)
