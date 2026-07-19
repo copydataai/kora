@@ -174,6 +174,16 @@ final class MusicPlayer: ObservableObject {
         syncQueue()
     }
 
+    func removeUpcoming(atOffsets offsets: IndexSet) {
+        queue.removeUpcoming(atOffsets: offsets)
+        syncQueue()
+    }
+
+    func clearUpcoming() {
+        queue.clearUpcoming()
+        syncQueue()
+    }
+
     /// Restore the last session, paused, at the saved position. Called after
     /// MusicLibrary.restore() so folder security scopes are already active.
     func restoreSession(matching libraryTracks: [Track]) {

@@ -61,6 +61,15 @@ struct PlayQueueTests {
         #expect(q.current?.title == "b")
     }
 
+    @Test @MainActor func removingUpcomingNeverInterruptsCurrentTrack() {
+        var q = PlayQueue(tracks: [track("a"), track("b"), track("c")], startAt: 0)
+        q.removeUpcoming(atOffsets: IndexSet(integer: 0))
+        #expect(q.current?.title == "a")
+        #expect(q.tracks.map(\.title) == ["a", "c"])
+        q.clearUpcoming()
+        #expect(q.tracks.map(\.title) == ["a"])
+    }
+
     @Test @MainActor func shuffleKeepsCurrentFirstAndPreservesTrackSet() {
         let a = track("a"), b = track("b"), c = track("c"), d = track("d")
         var q = PlayQueue(tracks: [a, b, c, d], startAt: 2)   // current = c

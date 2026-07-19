@@ -48,6 +48,18 @@ struct PlayQueue {
         }
     }
 
+    /// Offsets are relative to the upcoming slice, so the current track can
+    /// never be removed out from under playback.
+    mutating func removeUpcoming(atOffsets offsets: IndexSet) {
+        let absolute = IndexSet(offsets.map { index + 1 + $0 })
+        tracks.remove(atOffsets: absolute)
+    }
+
+    mutating func clearUpcoming() {
+        guard current != nil else { return }
+        tracks.removeSubrange((index + 1)..<tracks.endIndex)
+    }
+
     /// Shuffling moves the current track to the front so playback never jumps;
     /// un-shuffling restores the pre-shuffle order and re-finds the current track.
     mutating func setShuffled(_ on: Bool) {
