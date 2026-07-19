@@ -348,4 +348,3 @@ These are rejected for the current product direction, not hidden backlog:
   playback must never jump; every mutation must persist.
 - [ ] Confirm the README's existing “drag to reorder” claim is now true. No
   README feature expansion is needed for gated work that was not implemented.
-
