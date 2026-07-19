@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @EnvironmentObject var library: MusicLibrary
     @EnvironmentObject var player: MusicPlayer
-    @State private var showQueue = false
+    @Binding var showQueue: Bool
 
     var body: some View {
         NavigationSplitView {
@@ -49,7 +49,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(showQueue: .constant(false))
         .environmentObject(MusicLibrary())
         .environmentObject(MusicPlayer())
 }

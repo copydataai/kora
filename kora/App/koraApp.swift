@@ -4,10 +4,11 @@ import SwiftUI
 struct koraApp: App {
     @StateObject private var library = MusicLibrary()
     @StateObject private var player = MusicPlayer()
+    @State private var showQueue = false
 
     var body: some Scene {
         WindowGroup(id: "main") {
-            ContentView()
+            ContentView(showQueue: $showQueue)
                 .environmentObject(library)
                 .environmentObject(player)
                 .task {
@@ -31,6 +32,11 @@ struct koraApp: App {
                     Text("All").tag(RepeatMode.all)
                     Text("One").tag(RepeatMode.one)
                 }
+                Divider()
+                Button(showQueue ? "Hide Up Next" : "Show Up Next") { showQueue.toggle() }
+                    .keyboardShortcut("u", modifiers: [.command, .shift])
+                Button("Clear Up Next", role: .destructive) { player.clearUpcoming() }
+                    .disabled(player.queueIndex + 1 >= player.queueTracks.count)
             }
         }
 
