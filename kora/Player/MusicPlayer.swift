@@ -169,8 +169,8 @@ final class MusicPlayer: ObservableObject {
         loadAndPlayCurrent()   // updates the published queue via syncQueue()
     }
 
-    func moveInQueue(fromOffsets source: IndexSet, toOffset destination: Int) {
-        queue.move(fromOffsets: source, toOffset: destination)
+    func moveUpcoming(fromOffsets source: IndexSet, toOffset destination: Int) {
+        queue.moveUpcoming(fromOffsets: source, toOffset: destination)
         syncQueue()
     }
 

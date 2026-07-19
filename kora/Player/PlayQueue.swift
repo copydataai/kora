@@ -40,12 +40,11 @@ struct PlayQueue {
         index = min(max(newIndex, 0), tracks.count - 1)
     }
 
-    mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-        let currentID = current?.id
-        tracks.move(fromOffsets: source, toOffset: destination)
-        if let currentID, let i = tracks.firstIndex(where: { $0.id == currentID }) {
-            index = i
-        }
+    mutating func moveUpcoming(fromOffsets source: IndexSet, toOffset destination: Int) {
+        let base = index + 1
+        tracks.move(fromOffsets: IndexSet(source.map { base + $0 }),
+                    toOffset: base + destination)
+        discardOriginalOrder()
     }
 
     /// Offsets are relative to the upcoming slice, so the current track can
@@ -58,6 +57,10 @@ struct PlayQueue {
     mutating func clearUpcoming() {
         guard current != nil else { return }
         tracks.removeSubrange((index + 1)..<tracks.endIndex)
+    }
+
+    private mutating func discardOriginalOrder() {
+        originalTracks = []
     }
 
     /// Shuffling moves the current track to the front so playback never jumps;

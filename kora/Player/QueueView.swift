@@ -19,6 +19,7 @@ struct QueueView: View {
                                 queueRow(track, index: player.queueIndex + 1 + offset)
                             }
                             .onDelete(perform: player.removeUpcoming)
+                            .onMove(perform: player.moveUpcoming)
                         }
                     }
                 }
