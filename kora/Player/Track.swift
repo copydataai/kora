@@ -1,15 +1,15 @@
 import Foundation
 import AVFoundation
 
-struct Track: Identifiable, Hashable {
-    let id: UUID
+nonisolated struct Track: Identifiable, Hashable, Sendable {
+    let id: String
     let url: URL
     let folderID: UUID
     var title: String
     var artist: String?
 
     init(url: URL, folderID: UUID, title: String? = nil, artist: String? = nil) {
-        self.id = UUID()
+        self.id = "\(folderID.uuidString)|\(url.standardizedFileURL.path)"
         self.url = url
         self.folderID = folderID
         self.title = title ?? url.deletingPathExtension().lastPathComponent

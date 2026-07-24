@@ -16,7 +16,7 @@ final class MusicPlayer: ObservableObject {
     @Published private(set) var artist: String?
     @Published private(set) var artwork: Data?
     @Published private(set) var theme: ArtworkTheme = .neutral
-    @Published private(set) var currentTrackID: UUID?
+    @Published private(set) var currentTrackID: Track.ID?
     @Published private(set) var queueTracks: [Track] = []
     @Published private(set) var queueIndex: Int = 0
     @Published var volume: Double {

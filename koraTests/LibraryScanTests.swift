@@ -58,6 +58,12 @@ struct LibraryScanTests {
         #expect(t.artist == nil)
     }
 
+    @Test func rescanningKeepsTrackIdentityForPlaybackSelection() {
+        let folderID = UUID()
+        let url = URL(fileURLWithPath: "/m/Song.mp3")
+        #expect(Track(url: url, folderID: folderID).id == Track(url: url, folderID: folderID).id)
+    }
+
     // Search is filename/title search by design: tags aren't indexed at scan,
     // so `title` (filename-derived) is what the user can actually match on.
     @Test @MainActor func searchMatchesTitleAndArtistCaseInsensitively() {
