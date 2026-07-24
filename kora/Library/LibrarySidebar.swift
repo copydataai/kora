@@ -63,7 +63,9 @@ struct LibrarySidebar: View {
                     HStack {
                         Text(folder.name).foregroundStyle(folder.isAvailable ? .primary : .secondary)
                         Spacer()
-                        if folder.isAvailable {
+                        if library.scanningFolderIDs.contains(folder.id) {
+                            ProgressView().controlSize(.small).help("Scanning \(folder.name)")
+                        } else if folder.isAvailable {
                             Text("\(folder.tracks.count)").foregroundStyle(.secondary).font(.caption)
                         } else {
                             Image(systemName: "exclamationmark.triangle").foregroundStyle(.secondary)
