@@ -28,7 +28,12 @@ struct KoraNowPlayingEntryView: View {
     let entry: KoraNowPlayingEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        ZStack {
+            if let data = entry.snapshot?.artworkData, let image = NSImage(data: data) {
+                Image(nsImage: image).resizable().scaledToFill()
+                    .overlay(.black.opacity(0.48))
+            }
+            VStack(alignment: .leading, spacing: 6) {
             Text("Kora")
                 .font(.headline)
 
@@ -52,9 +57,12 @@ struct KoraNowPlayingEntryView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            }
+            .foregroundStyle(entry.snapshot?.artworkData == nil ? Color.primary : Color.white)
+            .padding(12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(12)
+        .clipped()
         .containerBackground(Color.secondary.opacity(0.12), for: .widget)
     }
 }
