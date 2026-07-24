@@ -102,10 +102,16 @@ struct LibrarySidebar: View {
             player.play(track: track, in: folder.tracks)
         } label: {
             HStack(spacing: 8) {
-                if isPlaying {
-                    Image(systemName: "speaker.wave.2.fill").foregroundStyle(player.theme.accent)
+                Image(systemName: isPlaying ? "speaker.wave.2.fill" : "music.note")
+                    .foregroundStyle(isPlaying ? player.theme.accent : .secondary)
+                    .frame(width: 16)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(track.title).lineLimit(1)
+                        .foregroundStyle(isPlaying ? player.theme.accent : .primary)
+                    if let artist = track.artist, !artist.isEmpty {
+                        Text(artist).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    }
                 }
-                Text(track.title).foregroundStyle(isPlaying ? player.theme.accent : .primary)
                 Spacer()
             }
         }
