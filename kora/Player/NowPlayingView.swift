@@ -34,8 +34,27 @@ struct NowPlayingView: View {
     }
 
     private var content: some View {
-        VStack(spacing: 28) {
-            artworkCard
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 44) {
+                artworkCard(size: 300)
+                controls
+            }
+            .frame(minWidth: 700)
+            .padding(40)
+
+            ScrollView {
+                VStack(spacing: 24) {
+                    artworkCard(size: 220)
+                    controls
+                }
+                .padding(28)
+            }
+        }
+        .tint(player.theme.accent)
+    }
+
+    private var controls: some View {
+        VStack(spacing: 22) {
             VStack(spacing: 6) {
                 Text(player.hasTrack ? player.currentTrackName : "Nothing playing")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
@@ -55,12 +74,10 @@ struct NowPlayingView: View {
                     .foregroundStyle(.red)
             }
         }
-        .padding(40)
-        .frame(maxWidth: 560)
-        .tint(player.theme.accent)
+        .frame(maxWidth: 460)
     }
 
-    private var artworkCard: some View {
+    private func artworkCard(size: CGFloat) -> some View {
         Group {
             if let data = player.artwork, let image = NSImage(data: data) {
                 Image(nsImage: image).resizable().scaledToFill()
@@ -72,7 +89,7 @@ struct NowPlayingView: View {
                 }
             }
         }
-        .frame(width: 280, height: 280)
+        .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .shadow(color: .black.opacity(0.4), radius: 24, y: 12)
     }
