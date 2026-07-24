@@ -20,6 +20,7 @@ final class MusicLibrary: ObservableObject {
     }
 
     @Published private(set) var folders: [Folder] = []
+    @Published private(set) var scanningFolderIDs: Set<UUID> = []
 
     private let defaults: UserDefaults
     private let bookmarksKey = "library.folderBookmarks"   // legacy [Data] blob, read for migration
@@ -70,8 +71,10 @@ final class MusicLibrary: ObservableObject {
         guard let bookmark = try? url.bookmarkData(
             options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil
         ) else { return }
-        ingest(url: url, bookmark: bookmark, displayName: nil)
-        persistCurrent()
+        Task {
+            _ = await ingest(url: url, bookmark: bookmark, displayName: nil)
+            persistCurrent()
+        }
     }
 
     func forget(_ folder: Folder) {
@@ -81,7 +84,7 @@ final class MusicLibrary: ObservableObject {
         persistCurrent()
     }
 
-    func restore() {
+    func restore() async {
         // The window's .task re-runs on every reopen; restoring twice would
         // duplicate every folder.
         guard folders.isEmpty else { return }
@@ -93,8 +96,8 @@ final class MusicLibrary: ObservableObject {
                 relativeTo: nil, bookmarkDataIsStale: &stale
             )
             if MusicLibrary.isAvailable(resolvedURL: url), let url {
-                let refreshed = ingest(url: url, bookmark: entry.bookmark,
-                                       displayName: entry.displayName, refreshIfStale: stale)
+                let refreshed = await ingest(url: url, bookmark: entry.bookmark,
+                                             displayName: entry.displayName, refreshIfStale: stale)
                 refreshedAny = refreshedAny || refreshed
             } else {
                 // Truly unresolvable — keep a placeholder to re-link rather than vanish.
@@ -107,9 +110,11 @@ final class MusicLibrary: ObservableObject {
 
     func rescan(_ folder: Folder) {
         guard let url = folder.url else { return }
-        let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folder.id) }
-        if let i = folders.firstIndex(where: { $0.id == folder.id }) {
-            folders[i].tracks = tracks
+        Task {
+            let tracks = await scan(url: url, folderID: folder.id)
+            if let i = folders.firstIndex(where: { $0.id == folder.id }) {
+                folders[i].tracks = tracks
+            }
         }
     }
 
@@ -123,12 +128,14 @@ final class MusicLibrary: ObservableObject {
         ) else { return }
         let accessed = newURL.startAccessingSecurityScopedResource()
         if accessed { accessedURLs.append(newURL) }
-        let tracks = MusicLibrary.audioFiles(in: newURL).map { Track(url: $0, folderID: folder.id) }
-        if let i = folders.firstIndex(where: { $0.id == folder.id }) {
-            folders[i] = Folder(id: folder.id, url: newURL, bookmark: bookmark,
-                                displayName: folder.displayName, isAvailable: true, tracks: tracks)
+        Task {
+            let tracks = await scan(url: newURL, folderID: folder.id)
+            if let i = folders.firstIndex(where: { $0.id == folder.id }) {
+                folders[i] = Folder(id: folder.id, url: newURL, bookmark: bookmark,
+                                    displayName: folder.displayName, isAvailable: true, tracks: tracks)
+            }
+            persistCurrent()
         }
-        persistCurrent()
     }
 
     func rename(_ folder: Folder, to name: String) {
@@ -146,7 +153,7 @@ final class MusicLibrary: ObservableObject {
     // MARK: Internal
 
     @discardableResult
-    private func ingest(url: URL, bookmark: Data, displayName: String?, refreshIfStale: Bool = false) -> Bool {
+    private func ingest(url: URL, bookmark: Data, displayName: String?, refreshIfStale: Bool = false) async -> Bool {
         let accessed = url.startAccessingSecurityScopedResource()
         if accessed { accessedURLs.append(url) }
         // A stale-but-resolvable bookmark is still usable; recreate it from the live URL
@@ -159,10 +166,26 @@ final class MusicLibrary: ObservableObject {
             refreshed = true
         }
         let folderID = UUID()
-        let tracks = MusicLibrary.audioFiles(in: url).map { Track(url: $0, folderID: folderID) }
         folders.append(Folder(id: folderID, url: url, bookmark: resolvedBookmark,
-                              displayName: displayName, isAvailable: true, tracks: tracks))
+                              displayName: displayName, isAvailable: true, tracks: []))
+        let tracks = await scan(url: url, folderID: folderID)
+        if let i = folders.firstIndex(where: { $0.id == folderID }) { folders[i].tracks = tracks }
         return refreshed
+    }
+
+    private func scan(url: URL, folderID: UUID) async -> [Track] {
+        scanningFolderIDs.insert(folderID)
+        defer { scanningFolderIDs.remove(folderID) }
+        return await Task.detached(priority: .userInitiated) {
+            var tracks: [Track] = []
+            for file in MusicLibrary.audioFiles(in: url) {
+                let track = Track(url: file, folderID: folderID)
+                let metadata = await track.loadMetadata()
+                tracks.append(Track(url: file, folderID: folderID,
+                                    title: metadata.title, artist: metadata.artist))
+            }
+            return tracks
+        }.value
     }
 
     private func loadPersisted() -> [PersistedFolder] {
@@ -208,8 +231,7 @@ extension MusicLibrary {
         return result.sorted { $0.path < $1.path }
     }
 
-    /// Filename/title + artist search. Tags aren't indexed at scan time, so
-    /// this is filename search in practice — good enough until it isn't.
+    /// Metadata-backed title and artist search. Scan populates both fields.
     nonisolated static func matches(_ track: Track, query: String) -> Bool {
         let q = query.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty else { return false }
