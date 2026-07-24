@@ -1,5 +1,7 @@
 # Kora
 
+[![Release](https://img.shields.io/github/v/release/copydataai/kora)](https://github.com/copydataai/kora/releases/latest)
+
 A minimal, native macOS music player. Point it at your music folders and play -
 no library import, no accounts, no clutter.
 
@@ -44,15 +46,16 @@ CI runs build and unit tests with `CODE_SIGNING_ALLOWED=NO`. Full UI tests are p
 
 ## Release
 
-Tagging `vX.Y.Z` on `main` triggers `.github/workflows/release.yml`, which
-archives, signs, notarizes, and staples the app, then attaches a DMG to a
-GitHub Release:
+No release has shipped yet. Tagging `vX.Y.Z` on `main` triggers
+`.github/workflows/release.yml`, which archives, signs, notarizes, and
+staples the app, then attaches a DMG to a GitHub Release:
 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
-Required repository secrets (Settings → Secrets → Actions):
+This requires 5 repository secrets first (Settings → Secrets → Actions),
+none of which are set yet:
 
 - `MACOS_CERTIFICATE` — base64 of a Developer ID Application `.p12`
   (`base64 -i cert.p12 | pbcopy`)
